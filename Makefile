@@ -1,14 +1,14 @@
 NAME=sdusrun
-TARGET=x86_64-unknown-linux-gnu
+TARGET=x86_64-unknown-linux-musl
 
 cbuild:
-	cargo build --release
+	cargo build --target $(TARGET) --release
 	cargo strip
-	strip -s target/release/$(NAME)
-	upx --best target/release/$(NAME)
 
 xbuild:
 	xargo build --target $(TARGET) --release
+
+min:
 	strip -s target/$(TARGET)/release/$(NAME)
 	upx --best target/$(TARGET)/release/$(NAME)
 
