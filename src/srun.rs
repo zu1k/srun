@@ -44,9 +44,10 @@ impl SrunClient {
     }
 
     fn get_token(&mut self) -> Result<String, Box<dyn std::error::Error>> {
-        self.time = unix_second();
+        self.time = unix_second() - 1;
+        println!("local timestamp: {}", self.time);
 
-        let resp = ureq::get((self.host.clone() + PATH_GET_CHALLENGE).as_str())
+        let resp = ureq::get(format!("http://{}{}", self.host, PATH_GET_CHALLENGE).as_str())
             .query("callback", "sdu")
             .query("username", &self.username)
             .query("ip", &self.ip)
@@ -62,7 +63,7 @@ impl SrunClient {
         Ok(self.token.clone())
     }
 
-    pub fn login(&mut self) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn login(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.get_token()?;
 
         let hmd5 = {
@@ -79,6 +80,7 @@ impl SrunClient {
             self.acid,
             &self.token,
         );
+        println!("param_i: {}", &self.param_i);
 
         let check_sum = {
             let check_sum = vec![
@@ -96,8 +98,9 @@ impl SrunClient {
             sha1_hasher.update(check_sum);
             format!("{:x}", sha1_hasher.finalize())
         };
+        println!("check_sum: {}", check_sum);
 
-        let resp = ureq::get((self.host.clone() + PATH_LOGIN).as_str())
+        let resp = ureq::get(format!("http://{}{}", self.host, PATH_LOGIN).as_str())
             .query("callback", "sdu")
             .query("action", "login")
             .query("username", &self.username)
@@ -115,8 +118,10 @@ impl SrunClient {
             .call()?
             .into_string()?;
 
-        println!("{}", resp);
-        Ok(resp)
+        let resp = resp.as_bytes();
+        let resp: LoginResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+        println!("{:#?}", resp);
+        Ok(())
     }
 }
 
@@ -128,6 +133,19 @@ struct ChallengeResponse {
     ecode: i32,
     error_msg: String,
     expire: String,
+    online_ip: String,
+    res: String,
+    srun_ver: String,
+    st: u64,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Default, Deserialize)]
+struct LoginResponse {
+    ecode: i32,
+    error: String,
+    error_msg: String,
+    client_ip: String,
     online_ip: String,
     res: String,
     srun_ver: String,
