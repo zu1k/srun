@@ -53,6 +53,7 @@ fn x_encode(msg: &str, key: &str) -> Vec<u8> {
     let mut msg = mix(msg.as_bytes(), true);
     let key = mix(key.as_bytes(), false);
 
+    let len = msg.len();
     let last = msg.len() - 1;
     let mut right = msg[last];
     let c: u32 = 0x9e3779b9; // 0x9e3779b9 = 0x86014019 | 0x183639A0
@@ -62,8 +63,9 @@ fn x_encode(msg: &str, key: &str) -> Vec<u8> {
     for _ in 0..count {
         d = d.wrapping_add(c);
         let e = d >> 2 & 3;
+
         for p in 0..=last {
-            let left = msg[(p + 1) % last];
+            let left = msg[(p + 1) % len];
             msg[p] = ((right >> 5) ^ (left << 2))
                 .wrapping_add((left >> 3 ^ right << 4) ^ (d ^ left))
                 .wrapping_add(key[(p & 3) ^ e as usize] ^ right)
@@ -71,6 +73,7 @@ fn x_encode(msg: &str, key: &str) -> Vec<u8> {
             right = msg[p];
         }
     }
+
     splite(msg, false)
 }
 

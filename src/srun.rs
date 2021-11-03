@@ -3,6 +3,7 @@ use hmac::{Hmac, Mac, NewMac};
 use md5::Md5;
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
+use std::{thread, time::Duration};
 
 const PATH_GET_CHALLENGE: &str = "/cgi-bin/get_challenge";
 const PATH_LOGIN: &str = "/cgi-bin/srun_portal";
@@ -44,7 +45,7 @@ impl SrunClient {
     }
 
     fn get_token(&mut self) -> Result<String, Box<dyn std::error::Error>> {
-        self.time = unix_second() - 1;
+        self.time = unix_second() - 2;
         println!("local timestamp: {}", self.time);
 
         let resp = ureq::get(format!("http://{}{}", self.host, PATH_GET_CHALLENGE).as_str())
@@ -59,68 +60,74 @@ impl SrunClient {
         self.challenge = serde_json::from_slice(&resp[4..resp.len() - 1])?;
         println!("{:#?}", &self.challenge);
         self.token = self.challenge.challenge.clone();
-        self.time = self.challenge.st;
         Ok(self.token.clone())
     }
 
     pub fn login(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         self.get_token()?;
+        println!("will try at most 10 times...");
+        let mut result = LoginResponse::default();
+        for ti in 0..=10 {
+            let hmd5 = {
+                let mut mac = Hmac::<Md5>::new_from_slice(self.token.as_bytes()).expect("aa");
+                mac.update(self.password.as_bytes());
+                let result = mac.finalize();
+                format!("{:x}", result.into_bytes())
+            };
 
-        let hmd5 = {
-            let mut mac = Hmac::<Md5>::new_from_slice(self.token.as_bytes()).expect("aa");
-            mac.update(self.password.as_bytes());
-            let result = mac.finalize();
-            format!("{:x}", result.into_bytes())
-        };
-
-        self.param_i = param_i(
-            &self.username,
-            &self.password,
-            &self.ip,
-            self.acid,
-            &self.token,
-        );
-        println!("param_i: {}", &self.param_i);
-
-        let check_sum = {
-            let check_sum = vec![
-                "",
+            self.param_i = param_i(
                 &self.username,
-                &hmd5,
-                &self.acid.to_string(),
+                &self.password,
                 &self.ip,
-                &self.n.to_string(),
-                &self.stype.to_string(),
-                &self.param_i,
-            ]
-            .join(&self.token);
-            let mut sha1_hasher = Sha1::new();
-            sha1_hasher.update(check_sum);
-            format!("{:x}", sha1_hasher.finalize())
-        };
-        println!("check_sum: {}", check_sum);
+                self.acid,
+                &self.token,
+            );
 
-        let resp = ureq::get(format!("http://{}{}", self.host, PATH_LOGIN).as_str())
-            .query("callback", "sdu")
-            .query("action", "login")
-            .query("username", &self.username)
-            .query("password", format!("{{MD5}}{}", hmd5).as_str())
-            .query("ip", &self.ip)
-            .query("ac_id", self.acid.to_string().as_str())
-            .query("n", self.n.to_string().as_str())
-            .query("type", self.stype.to_string().as_str())
-            .query("os", &self.os)
-            .query("name", &self.name)
-            .query("double_stack", self.double_stack.to_string().as_str())
-            .query("info", &self.param_i)
-            .query("chksum", &check_sum)
-            .query("_", &self.time.to_string())
-            .call()?
-            .into_string()?;
+            let check_sum = {
+                let check_sum = vec![
+                    "",
+                    &self.username,
+                    &hmd5,
+                    &self.acid.to_string(),
+                    &self.ip,
+                    &self.n.to_string(),
+                    &self.stype.to_string(),
+                    &self.param_i,
+                ]
+                .join(&self.token);
+                let mut sha1_hasher = Sha1::new();
+                sha1_hasher.update(check_sum);
+                format!("{:x}", sha1_hasher.finalize())
+            };
 
-        let resp = resp.as_bytes();
-        let resp: LoginResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
-        println!("{:#?}", resp);
+            let resp = ureq::get(format!("http://{}{}", self.host, PATH_LOGIN).as_str())
+                .query("callback", "sdu")
+                .query("action", "login")
+                .query("username", &self.username)
+                .query("password", format!("{{MD5}}{}", hmd5).as_str())
+                .query("ip", &self.ip)
+                .query("ac_id", self.acid.to_string().as_str())
+                .query("n", self.n.to_string().as_str())
+                .query("type", self.stype.to_string().as_str())
+                .query("os", &self.os)
+                .query("name", &self.name)
+                .query("double_stack", self.double_stack.to_string().as_str())
+                .query("info", &self.param_i)
+                .query("chksum", &check_sum)
+                .query("_", &self.time.to_string())
+                .call()?
+                .into_string()?;
+
+            let resp = resp.as_bytes();
+            result = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+            if result.access_token.is_some() {
+                println!("login success: {:#?}", result);
+                return Ok(());
+            }
+            println!("try {}: failed", ti);
+            thread::sleep(Duration::from_secs(1));
+        }
+        println!("{:#?}", result);
         Ok(())
     }
 }
@@ -142,14 +149,29 @@ struct ChallengeResponse {
 #[allow(dead_code)]
 #[derive(Debug, Default, Deserialize)]
 struct LoginResponse {
+    #[serde(rename(deserialize = "ServerFlag"))]
+    server_flag: Option<i32>,
+    #[serde(rename(deserialize = "ServicesIntfServerIP"))]
+    services_intf_server_ip: Option<String>,
+    #[serde(rename(deserialize = "ServicesIntfServerPort"))]
+    services_intf_server_port: Option<String>,
+    access_token: Option<String>,
+    checkout_date: Option<u64>,
     ecode: i32,
     error: String,
     error_msg: String,
     client_ip: String,
     online_ip: String,
+    real_name: Option<String>,
+    remain_flux: Option<i32>,
+    remain_times: Option<i32>,
     res: String,
     srun_ver: String,
-    st: u64,
+    suc_msg: Option<String>,
+    sysver: Option<String>,
+    username: Option<String>,
+    wallet_balance: Option<i32>,
+    st: Option<u64>,
 }
 
 use std::time::{SystemTime, UNIX_EPOCH};

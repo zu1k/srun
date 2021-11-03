@@ -25,7 +25,6 @@ fn main() {
     let command = args[1].clone();
     match command.as_str() {
         "login" => {
-            println!("do login");
             let matches = match opts.parse(&args[2..]) {
                 Ok(m) => m,
                 Err(e) => {
