@@ -62,22 +62,14 @@ fn x_encode(msg: &str, key: &str) -> Vec<u8> {
     for _ in 0..count {
         d = d.wrapping_add(c);
         let e = d >> 2 & 3;
-
-        for p in 0..last {
-            let left = msg[p + 1];
-            let m = ((right >> 5) ^ (left << 2))
+        for p in 0..=last {
+            let left = msg[(p + 1) % last];
+            msg[p] = ((right >> 5) ^ (left << 2))
                 .wrapping_add((left >> 3 ^ right << 4) ^ (d ^ left))
-                .wrapping_add(key[(p & 3) ^ e as usize] ^ right);
-            msg[p] = msg[p].wrapping_add(m);
+                .wrapping_add(key[(p & 3) ^ e as usize] ^ right)
+                .wrapping_add(msg[p]);
             right = msg[p];
         }
-
-        let left = msg[0];
-        let m = (right >> 5 ^ left << 2)
-            .wrapping_add((left >> 3 ^ right << 4) ^ (d ^ left))
-            .wrapping_add(key[(last & 3) ^ e as usize] ^ right);
-        msg[last] = m.wrapping_add(msg[last]);
-        right = msg[last];
     }
     splite(msg, false)
 }
