@@ -9,8 +9,13 @@ xbuild:
 	xargo build --target $(TARGET) --release
 
 min:
-	strip -s target/$(TARGET)/release/$(NAME)
-	upx --best target/$(TARGET)/release/$(NAME)
+	strip -s "target/$(TARGET)/release/$(NAME)"
+	upx --best "target/$(TARGET)/release/$(NAME)"
+
+windows:
+	xargo build --target x86_64-pc-windows-gnu --release
+	strip -s "target/x86_64-pc-windows-gnu/release/$(NAME).exe"
+	upx --best "target/x86_64-pc-windows-gnu/release/$(NAME).exe"
 
 clean:
 	cargo clean
