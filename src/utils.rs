@@ -1,18 +1,18 @@
-use std::{io, net::IpAddr};
+use std::{io, net::IpAddr, vec};
 
 fn get_ips() -> Vec<IpAddr> {
-    pnet_datalink::interfaces()
-        .iter()
-        .filter(|i| i.is_up() && i.is_multicast())
-        .map(|i| -> Vec<IpAddr> {
-            i.ips
-                .iter()
-                .filter(|ip| ip.is_ipv4())
-                .map(|ip| ip.ip())
-                .collect()
-        })
-        .flatten()
-        .collect()
+    let mut ips = vec![];
+    let ifs = pnet_datalink::interfaces();
+    for i in ifs {
+        if i.is_up() && i.is_multicast() {
+            for ip in i.ips {
+                if ip.is_ipv4() {
+                    ips.push(ip.ip())
+                }
+            }
+        }
+    }
+    ips
 }
 
 pub fn select_ip() -> Option<String> {
