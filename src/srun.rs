@@ -13,7 +13,7 @@ const PATH_LOGIN: &str = "/cgi-bin/srun_portal";
 
 #[derive(Default, Debug)]
 pub struct SrunClient {
-    host: String,
+    server: String,
     challenge: ChallengeResponse,
 
     username: String,
@@ -59,7 +59,7 @@ impl SrunClient {
             username: username.to_string(),
             password: password.to_string(),
             ip: ip.to_string(),
-            host: host.to_string(),
+            server: host.to_string(),
             acid: 12,
             n: 200,
             stype: 1,
@@ -75,7 +75,7 @@ impl SrunClient {
             username: info.username,
             password: info.password,
             ip: info.ip,
-            host: host.to_string(),
+            server: host.to_string(),
             acid: 12,
             n: 200,
             stype: 1,
@@ -88,7 +88,7 @@ impl SrunClient {
 
     fn get_token(&mut self) -> Result<String, Box<dyn std::error::Error>> {
         self.time = unix_second() - 2;
-        let resp = ureq::get(format!("http://{}{}", self.host, PATH_GET_CHALLENGE).as_str())
+        let resp = ureq::get(format!("{}{}", self.server, PATH_GET_CHALLENGE).as_str())
             .query("callback", "sdu")
             .query("username", &self.username)
             .query("ip", &self.ip)
@@ -146,7 +146,7 @@ impl SrunClient {
         println!("will try at most 10 times...");
         let mut result = LoginResponse::default();
         for ti in 1..=10 {
-            let resp = ureq::get(format!("http://{}{}", self.host, PATH_LOGIN).as_str())
+            let resp = ureq::get(format!("{}{}", self.server, PATH_LOGIN).as_str())
                 .query("callback", "sdu")
                 .query("action", "login")
                 .query("username", &self.username)

@@ -24,7 +24,7 @@ config file template
 
 ```json
 {
-    "server": "202.194.15.87",
+    "server": "http://202.194.15.87",
     "users": [
         {
             "username": "",
@@ -39,6 +39,8 @@ config file template
     ]
 }
 ```
+
+if you need tls support, compile with feature `tls` enabled.
 
 ## License
 

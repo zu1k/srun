@@ -32,6 +32,7 @@ fn main() {
             return;
         }
     };
+
     match command.as_str() {
         "login" => match matches.opt_str("c") {
             Some(config_path) => match read_config_from_file(config_path) {
@@ -42,10 +43,10 @@ fn main() {
                             .clone()
                             .unwrap_or_else(|| match matches.opt_str("s") {
                                 Some(u) => u,
-                                None => "202.194.15.87".to_string(),
+                                None => "http://202.194.15.87".to_string(),
                             });
                     for user in config {
-                        login(server.clone(), user)
+                        login(&server, user)
                     }
                 }
                 Err(e) => {
@@ -55,7 +56,7 @@ fn main() {
             None => {
                 let server = match matches.opt_str("s") {
                     Some(u) => u,
-                    None => "202.194.15.87".to_string(),
+                    None => "http://202.194.15.87".to_string(),
                 };
                 let username = match matches.opt_str("u") {
                     Some(u) => u,
@@ -78,7 +79,7 @@ fn main() {
                         return;
                     }
                 };
-                login(server, User::new(username, password, ip));
+                login(&server, User::new(username, password, ip));
             }
         },
         _ => {
@@ -87,9 +88,9 @@ fn main() {
     }
 }
 
-fn login(server: String, user: User) {
+fn login(server: &str, user: User) {
     println!("login user: {:#?}", user);
-    let mut client = sdusrun::SrunClient::new_from_info(&server, user);
+    let mut client = sdusrun::SrunClient::new_from_info(server, user);
     if let Err(e) = client.login() {
         println!("login error: {}", e);
     }
