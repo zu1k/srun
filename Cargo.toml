@@ -1,6 +1,6 @@
 [package]
 name = "sdusrun"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
 description = "srun login"
@@ -24,11 +24,13 @@ getopts = "0.2"
 hmac = "0.11"
 lazy_static = "1.4"
 md-5 = "0.9"
+pnet_datalink = "0.28"
 quick-error = "2.0"
 ureq = { version = "2.3", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha-1 = "0.9"
+
 
 [features]
 default = []

@@ -74,10 +74,13 @@ fn main() {
                 };
                 let ip = match matches.opt_str("i") {
                     Some(u) => u,
-                    None => {
-                        println!("need ip");
-                        return;
-                    }
+                    None => match sdusrun::select_ip() {
+                        Some(ip) => ip,
+                        None => {
+                            println!("need ip");
+                            return;
+                        }
+                    },
                 };
                 login(&server, User::new(username, password, ip));
             }

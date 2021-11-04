@@ -173,7 +173,7 @@ impl SrunClient {
             println!("try {}: failed", ti);
             thread::sleep(Duration::from_millis(300));
         }
-        println!("{:?}", result);
+        println!("{:#?}", result);
         Ok(())
     }
 }
@@ -183,7 +183,7 @@ impl SrunClient {
 struct ChallengeResponse {
     challenge: Option<String>,
     client_ip: String,
-    ecode: i32,
+    ecode: ECode,
     error_msg: String,
     expire: Option<String>,
     online_ip: String,
@@ -204,7 +204,7 @@ struct LoginResponse {
     services_intf_server_port: String,
     access_token: String,
     checkout_date: u64,
-    ecode: i32,
+    ecode: ECode,
     error: String,
     error_msg: String,
     client_ip: String,
@@ -219,6 +219,19 @@ struct LoginResponse {
     username: String,
     wallet_balance: i32,
     st: u64,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(untagged)]
+enum ECode {
+    I(i32),
+    S(String),
+}
+
+impl Default for ECode {
+    fn default() -> Self {
+        Self::I(0)
+    }
 }
 
 fn unix_second() -> u64 {
