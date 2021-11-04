@@ -29,12 +29,52 @@ pub struct SrunClient {
     time: u64,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+pub struct User {
+    pub username: String,
+    pub password: String,
+    pub ip: String,
+}
+
+impl User {
+    pub fn new(username: String, password: String, ip: String) -> Self {
+        Self {
+            username,
+            password,
+            ip,
+        }
+    }
+}
+
+quick_error! {
+    #[derive(Debug)]
+    pub enum SrunError {
+        GetChallengeFailed
+    }
+}
+
 impl SrunClient {
     pub fn new(host: &str, username: &str, password: &str, ip: &str) -> Self {
         Self {
             username: username.to_string(),
             password: password.to_string(),
             ip: ip.to_string(),
+            host: host.to_string(),
+            acid: 12,
+            n: 200,
+            stype: 1,
+            double_stack: 0,
+            os: "Windows 10".to_string(),
+            name: "Windows".to_string(),
+            ..Default::default()
+        }
+    }
+
+    pub fn new_from_info(host: &str, info: User) -> Self {
+        Self {
+            username: info.username,
+            password: info.password,
+            ip: info.ip,
             host: host.to_string(),
             acid: 12,
             n: 200,
@@ -59,7 +99,12 @@ impl SrunClient {
 
         self.challenge = serde_json::from_slice(&resp[4..resp.len() - 1])?;
         println!("{:#?}", &self.challenge);
-        self.token = self.challenge.challenge.clone();
+        match self.challenge.challenge.clone() {
+            Some(token) => self.token = token,
+            None => {
+                return Err(Box::new(SrunError::GetChallengeFailed));
+            }
+        };
         Ok(self.token.clone())
     }
 
@@ -136,11 +181,11 @@ impl SrunClient {
 #[allow(dead_code)]
 #[derive(Debug, Default, Deserialize)]
 struct ChallengeResponse {
-    challenge: String,
+    challenge: Option<String>,
     client_ip: String,
     ecode: i32,
     error_msg: String,
-    expire: String,
+    expire: Option<String>,
     online_ip: String,
     res: String,
     srun_ver: String,

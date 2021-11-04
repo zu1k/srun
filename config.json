@@ -1,0 +1,15 @@
+{
+    "server": "",
+    "users": [
+        {
+            "username": "",
+            "password": "",
+            "ip": ""
+        },
+        {
+            "username": "",
+            "password": "",
+            "ip": ""
+        }
+    ]
+}
