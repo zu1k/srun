@@ -1,8 +1,8 @@
-use std::{io, net::IpAddr, vec};
+use std::{io, net::IpAddr};
 
 fn get_ips() -> Vec<IpAddr> {
-    let mut ips = vec![];
     let ifs = pnet_datalink::interfaces();
+    let mut ips = Vec::with_capacity(ifs.len());
     for i in ifs {
         if i.is_up() && i.is_multicast() {
             for ip in i.ips {
