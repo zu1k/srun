@@ -12,7 +12,7 @@
 ## 使用方法
 
 ```
-./sdusrun login -u USERNAME -p PASSWORD -i IP [-s AUTH_SERVER_IP]
+./sdusrun login -u USERNAME -p PASSWORD -i IP [-s AUTH_SERVER]
 ```
 
 or read config from file

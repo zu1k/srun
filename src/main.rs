@@ -18,6 +18,7 @@ fn main() {
     opts.optopt("u", "username", "username", "");
     opts.optopt("p", "password", "password", "");
     opts.optopt("i", "ip", "ip", "");
+    opts.optflag("d", "detect", "detect client ip");
 
     if args.len() < 2 {
         print_usage(&program, &opts);
@@ -46,7 +47,7 @@ fn main() {
                                 None => "http://202.194.15.87".to_string(),
                             });
                     for user in config {
-                        login(&server, user)
+                        login(&server, user, false)
                     }
                 }
                 Err(e) => {
@@ -74,15 +75,14 @@ fn main() {
                 };
                 let ip = match matches.opt_str("i") {
                     Some(u) => u,
-                    None => match sdusrun::select_ip() {
-                        Some(ip) => ip,
-                        None => {
-                            println!("need ip");
-                            return;
-                        }
-                    },
+                    None => String::new(),
                 };
-                login(&server, User::new(username, password, ip));
+                let use_auth_provided_ip = matches.opt_present("d");
+                login(
+                    &server,
+                    User::new(username, password, ip),
+                    use_auth_provided_ip,
+                );
             }
         },
         _ => {
@@ -91,9 +91,10 @@ fn main() {
     }
 }
 
-fn login(server: &str, user: User) {
+fn login(server: &str, user: User, use_auth_provided_ip: bool) {
     println!("login user: {:#?}", user);
-    let mut client = sdusrun::SrunClient::new_from_info(server, user);
+    let mut client =
+        sdusrun::SrunClient::new_from_info(server, user).set_auto_detect_ip(use_auth_provided_ip);
     if let Err(e) = client.login() {
         println!("login error: {}", e);
     }

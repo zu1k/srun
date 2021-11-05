@@ -20,6 +20,6 @@ deps:
 fmt:
 	cargo fmt --all
 
-clippy:
+c:
 	cargo clippy
 
