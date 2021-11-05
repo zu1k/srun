@@ -1,0 +1,32 @@
+BINDIR=bin
+VERSION=$(shell git describe --tags || echo "unknown version")
+UPX=upx --best
+CROSS_BUILD=cross build --release --target
+STRIP=llvm-strip -s
+
+CROSS_TARGET_LIST = \
+	x86_64-unknown-linux-musl \
+	aarch64-unknown-linux-musl \
+	i686-unknown-linux-musl \
+	mips-unknown-linux-musl \
+	mipsel-unknown-linux-musl
+
+cross: $(CROSS_TARGET_LIST)	
+
+$(CROSS_TARGET_LIST):
+	$(CROSS_BUILD) $@
+	cp "target/$@/release/$(NAME)" "$(BINDIR)/$(NAME)-$@"
+	$(STRIP) "$(BINDIR)/$(NAME)-$@"
+	$(UPX) "$(BINDIR)/$(NAME)-$@"
+
+windows:
+	cargo build --target x86_64-pc-windows-gnu --release
+	cp "target/x86_64-pc-windows-gnu/release/$(NAME).exe" "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
+	$(STRIP) "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
+	$(UPX) "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
+
+bindir:
+	rm -rf $(BINDIR)
+	mkdir $(BINDIR)
+
+release: bindir cross

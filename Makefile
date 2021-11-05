@@ -1,31 +1,25 @@
 NAME=sdusrun
 TARGET=x86_64-unknown-linux-musl
+include scripts/Makrfile.release
+
+all: fmt clippy cbuild
 
 cbuild:
-	cargo build --target $(TARGET) --release
+	cargo build --target $(TARGET)
 	cargo strip
 
 xbuild:
-	xargo build --target $(TARGET) --release
-
-min:
-	strip -s "target/$(TARGET)/release/$(NAME)"
-	upx --best "target/$(TARGET)/release/$(NAME)"
-
-windows:
-	xargo build --target x86_64-pc-windows-gnu --release
-	strip -s "target/x86_64-pc-windows-gnu/release/$(NAME).exe"
-	upx --best "target/x86_64-pc-windows-gnu/release/$(NAME).exe"
+	xargo build --target $(TARGET)
 
 clean:
 	cargo clean
 
-install_deps:
-	cargo install cargo-strip
-	cargo install xargo
+deps:
+	cargo install cargo-strip xargo cross
 
 fmt:
 	cargo fmt --all
 
 clippy:
 	cargo clippy
+
