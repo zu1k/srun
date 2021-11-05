@@ -1,6 +1,6 @@
 NAME=sdusrun
 TARGET=x86_64-unknown-linux-musl
-include scripts/Makrfile.release
+include scripts/Makefile.release
 
 all: fmt clippy cbuild
 
