@@ -1,4 +1,29 @@
-use std::{io, net::IpAddr};
+use std::{
+    io,
+    net::{IpAddr, TcpStream, ToSocketAddrs},
+    time::{Duration, SystemTime},
+};
+
+quick_error! {
+    #[derive(Debug)]
+    pub enum UtilError {
+        AddrResolveError
+    }
+}
+
+#[allow(dead_code)]
+fn tcp_ping(addr: &str) -> Result<u16, Box<dyn std::error::Error>> {
+    let addr = addr.to_socket_addrs()?.next();
+    if addr.is_none() {
+        return Err(Box::new(UtilError::AddrResolveError));
+    }
+    let timeout = Duration::from_secs(3);
+    let start_time = SystemTime::now();
+    let stream = TcpStream::connect_timeout(&addr.unwrap(), timeout)?;
+    stream.peer_addr()?;
+    let d = SystemTime::now().duration_since(start_time)?;
+    Ok(d.as_millis() as u16)
+}
 
 fn get_ips() -> Vec<IpAddr> {
     let ifs = pnet_datalink::interfaces();
@@ -51,4 +76,10 @@ pub fn select_ip() -> Option<String> {
 #[test]
 fn test_get_ips() {
     select_ip();
+}
+
+#[test]
+fn test_tcp_ping() {
+    let p = tcp_ping("baidu.com:80");
+    println!("{:?}", p);
 }
