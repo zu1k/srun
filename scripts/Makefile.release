@@ -30,4 +30,12 @@ bindir:
 	rm -rf $(BINDIR)
 	mkdir $(BINDIR)
 
-release: bindir cross
+release: bindir gz_release
+
+bin_gz=$(addsuffix .gz, $(CROSS_TARGET_LIST))
+
+$(bin_gz): %.gz : %
+	chmod +x $(BINDIR)/$(NAME)-$(basename $@)
+	gzip -f -S -$(VERSION).gz $(BINDIR)/$(NAME)-$(basename $@)
+
+gz_release: $(bin_gz)
