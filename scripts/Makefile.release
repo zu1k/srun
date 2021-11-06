@@ -21,10 +21,9 @@ $(CROSS_TARGET_LIST):
 	$(UPX) "$(BINDIR)/$(NAME)-$@"
 
 windows:
-	cargo build --target x86_64-pc-windows-gnu --release
+	cargo build --target x86_64-pc-windows-msvc --release
 	cp "target/x86_64-pc-windows-gnu/release/$(NAME).exe" "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
-	$(STRIP) "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
-	$(UPX) "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
+	$(UPX) "$(BINDIR)/$(NAME)-x86_64-pc-windows-msvc.exe"
 
 bindir:
 	rm -rf $(BINDIR)

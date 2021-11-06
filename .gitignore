@@ -1,3 +1,4 @@
 /target
 /bin
-config_test.json
+/Packet.lib
+/config_test.json
