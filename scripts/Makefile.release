@@ -6,8 +6,9 @@ STRIP=llvm-strip -s
 
 CROSS_TARGET_LIST = \
 	x86_64-unknown-linux-musl \
-	aarch64-unknown-linux-musl \
 	i686-unknown-linux-musl \
+	aarch64-unknown-linux-musl \
+	armv7-unknown-linux-musleabihf \
 	mips-unknown-linux-musl \
 	mipsel-unknown-linux-musl
 

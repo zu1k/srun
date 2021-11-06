@@ -302,7 +302,7 @@ dependencies = [
 
 [[package]]
 name = "sdusrun"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "base64 0.13.0 (git+https://github.com/marshallpierce/rust-base64.git)",
  "getopts",
