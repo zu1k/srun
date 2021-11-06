@@ -40,6 +40,20 @@ fn get_ips() -> Vec<IpAddr> {
     ips
 }
 
+pub fn get_ip_by_if_name(if_name: &str) -> Option<String> {
+    let ifs = pnet_datalink::interfaces();
+    for i in ifs {
+        if i.is_up() && i.name.contains(if_name) && !i.ips.is_empty() {
+            for ip in i.ips {
+                if ip.is_ipv4() {
+                    return Some(ip.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
 pub fn select_ip() -> Option<String> {
     let ips = get_ips();
     if ips.is_empty() {
@@ -54,7 +68,7 @@ pub fn select_ip() -> Option<String> {
         println!("    {}. {}", n + 1, ip);
     }
 
-    for _ in 0..10 {
+    for t in 1..=3 {
         let mut input_text = String::new();
         io::stdin()
             .read_line(&mut input_text)
@@ -67,9 +81,9 @@ pub fn select_ip() -> Option<String> {
                 return Some(ip);
             }
         }
-        println!("not a valid index number");
+        println!("not a valid index number, {}/3", t);
     }
-    println!("invalid input for 10 times");
+    println!("invalid input for 3 times");
     None
 }
 

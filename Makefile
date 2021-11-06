@@ -5,8 +5,7 @@ include scripts/Makefile.release
 all: fmt clippy cbuild
 
 cbuild:
-	cargo build --target $(TARGET)
-	cargo strip
+	cargo build
 
 xbuild:
 	xargo build --target $(TARGET)
@@ -20,6 +19,8 @@ deps:
 fmt:
 	cargo fmt --all
 
-c:
+clippy:
 	cargo clippy
+
+a: fmt clippy
 

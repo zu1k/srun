@@ -12,13 +12,14 @@ const PATH_GET_CHALLENGE: &str = "/cgi-bin/get_challenge";
 const PATH_LOGIN: &str = "/cgi-bin/srun_portal";
 
 #[derive(Default, Debug)]
-pub struct SrunClient {
-    server: String,
-    use_auth_provided_ip: bool,
+pub struct SrunClient<'s> {
+    auth_server: &'s str,
 
-    username: String,
-    password: String,
+    username: &'s str,
+    password: &'s str,
     ip: String,
+    detect_ip: bool,
+
     acid: i32,
     token: String,
     n: i32,
@@ -29,23 +30,6 @@ pub struct SrunClient {
     time: u64,
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct User {
-    pub username: String,
-    pub password: String,
-    pub ip: String,
-}
-
-impl User {
-    pub fn new(username: String, password: String, ip: String) -> Self {
-        Self {
-            username,
-            password,
-            ip,
-        }
-    }
-}
-
 quick_error! {
     #[derive(Debug)]
     pub enum SrunError {
@@ -54,13 +38,13 @@ quick_error! {
     }
 }
 
-impl SrunClient {
-    pub fn new_from_info(host: &str, info: User) -> Self {
+impl<'s> SrunClient<'s> {
+    pub fn new(auth_server: &'s str, username: &'s str, password: &'s str, ip: &'s str) -> Self {
         Self {
-            username: info.username,
-            password: info.password,
-            ip: info.ip,
-            server: host.to_string(),
+            username,
+            password,
+            ip: ip.to_owned(),
+            auth_server,
             acid: 12,
             n: 200,
             stype: 1,
@@ -71,24 +55,21 @@ impl SrunClient {
         }
     }
 
-    pub fn set_auto_detect_ip(mut self, detect: bool) -> Self {
-        self.use_auth_provided_ip = detect;
+    pub fn set_detect_ip(mut self, detect: bool) -> Self {
+        self.detect_ip = detect;
         self
     }
 
     fn get_token(&mut self) -> Result<String, Box<dyn std::error::Error>> {
-        if !self.use_auth_provided_ip && self.ip.is_empty() {
-            self.ip = crate::select_ip().unwrap_or_default();
-            if self.ip.is_empty() {
-                println!("need ip");
-                return Err(Box::new(SrunError::IpUndefinedError));
-            }
+        if !self.detect_ip && self.ip.is_empty() {
+            println!("need ip");
+            return Err(Box::new(SrunError::IpUndefinedError));
         }
 
         self.time = unix_second() - 2;
-        let resp = ureq::get(format!("{}{}", self.server, PATH_GET_CHALLENGE).as_str())
+        let resp = ureq::get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str())
             .query("callback", "sdu")
-            .query("username", &self.username)
+            .query("username", self.username)
             .query("ip", &self.ip)
             .query("_", &self.time.to_string())
             .call()?
@@ -100,7 +81,7 @@ impl SrunClient {
         match challenge.challenge.clone() {
             Some(token) => {
                 self.token = token;
-                if self.use_auth_provided_ip && !challenge.client_ip.is_empty() {
+                if self.detect_ip && !challenge.client_ip.is_empty() {
                     self.ip = challenge.client_ip;
                 }
             }
@@ -126,8 +107,8 @@ impl SrunClient {
         };
 
         let param_i = param_i(
-            &self.username,
-            &self.password,
+            self.username,
+            self.password,
             &self.ip,
             self.acid,
             &self.token,
@@ -136,7 +117,7 @@ impl SrunClient {
         let check_sum = {
             let check_sum = vec![
                 "",
-                &self.username,
+                self.username,
                 &hmd5,
                 &self.acid.to_string(),
                 &self.ip,
@@ -153,10 +134,10 @@ impl SrunClient {
         println!("will try at most 10 times...");
         let mut result = LoginResponse::default();
         for ti in 1..=10 {
-            let resp = ureq::get(format!("{}{}", self.server, PATH_LOGIN).as_str())
+            let resp = ureq::get(format!("{}{}", self.auth_server, PATH_LOGIN).as_str())
                 .query("callback", "sdu")
                 .query("action", "login")
-                .query("username", &self.username)
+                .query("username", self.username)
                 .query("password", format!("{{MD5}}{}", hmd5).as_str())
                 .query("ip", &self.ip)
                 .query("ac_id", self.acid.to_string().as_str())
