@@ -46,7 +46,7 @@ pub fn get_ip_by_if_name(if_name: &str) -> Option<String> {
         if i.is_up() && i.name.contains(if_name) && !i.ips.is_empty() {
             for ip in i.ips {
                 if ip.is_ipv4() {
-                    return Some(ip.to_string());
+                    return Some(ip.ip().to_string());
                 }
             }
         }
@@ -90,6 +90,11 @@ pub fn select_ip() -> Option<String> {
 #[test]
 fn test_get_ips() {
     select_ip();
+}
+
+#[test]
+fn test_get_ip_by_name() {
+    println!("{:?}", get_ip_by_if_name("wlp3s0"));
 }
 
 #[test]

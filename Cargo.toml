@@ -1,9 +1,9 @@
 [package]
 name = "sdusrun"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
-description = "srun login"
+description = "SRun3000 login"
 readme = "README.md"
 homepage = "https://github.com/zu1k/sdusrun"
 repository = "https://github.com/zu1k/sdusrun"
