@@ -21,7 +21,9 @@ $(CROSS_TARGET_LIST):
 	$(UPX) "$(BINDIR)/$(NAME)-$@"
 
 windows:
+	cp assets/libpacket/x64/Packet.lib Packet.lib
 	cargo build --target x86_64-pc-windows-msvc --release
+	rm -f Packet.lib
 	cp "target/x86_64-pc-windows-gnu/release/$(NAME).exe" "$(BINDIR)/$(NAME)-x86_64-pc-windows-gnu.exe"
 	$(UPX) "$(BINDIR)/$(NAME)-x86_64-pc-windows-msvc.exe"
 

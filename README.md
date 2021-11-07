@@ -43,6 +43,19 @@ This method is similar to the first method, except that it saves you the trouble
 
 SDUSRun will query all the legitimate IPs in advance and then print a list of IPs for you to choose from.
 
+```sh
+$ ./sdusrun login -u USERNAME -p PASSWORD --select-ip
+Please select your IP:
+    1. 192.168.226.5
+    2. 10.27.196.218
+    3. 172.16.150.1
+    4. 192.168.128.1
+    5. 198.10.0.1
+2
+you choose 10.27.196.218
+...
+```
+
 Please note that when your computer has only one IP that can be authorized, we will simply omit the selection process and use this IP.
 
 ### Using a Config
