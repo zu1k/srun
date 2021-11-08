@@ -1,8 +1,9 @@
 BINDIR=bin
 VERSION=$(shell git describe --tags || echo "unknown version")
 UPX=upx --best
-CROSS_BUILD=cross build --release --target
 STRIP=llvm-strip -s
+CROSS_BUILD=cross build --release --target
+TLS=FALSE
 
 CROSS_TARGET_LIST = \
 	x86_64-unknown-linux-musl \
@@ -12,13 +13,18 @@ CROSS_TARGET_LIST = \
 	mips-unknown-linux-musl \
 	mipsel-unknown-linux-musl
 
-cross: $(CROSS_TARGET_LIST)	
-
 $(CROSS_TARGET_LIST):
+ifeq ($(TLS),TRUE)
+	$(CROSS_BUILD) $@ --features tls
+	cp "target/$@/release/$(NAME)" "$(BINDIR)/$(NAME)-tls-$@"
+	$(STRIP) "$(BINDIR)/$(NAME)-tls-$@"
+	$(UPX) "$(BINDIR)/$(NAME)-tls-$@"
+else
 	$(CROSS_BUILD) $@
 	cp "target/$@/release/$(NAME)" "$(BINDIR)/$(NAME)-$@"
 	$(STRIP) "$(BINDIR)/$(NAME)-$@"
 	$(UPX) "$(BINDIR)/$(NAME)-$@"
+endif
 
 windows:
 	cp assets/libpacket/x64/Packet.lib Packet.lib
@@ -31,12 +37,17 @@ bindir:
 	rm -rf $(BINDIR)
 	mkdir $(BINDIR)
 
-release: bindir gz_release
-
 bin_gz=$(addsuffix .gz, $(CROSS_TARGET_LIST))
 
 $(bin_gz): %.gz : %
+ifeq ($(TLS),TRUE)
+	chmod +x $(BINDIR)/$(NAME)-tls-$(basename $@)
+	gzip -f -S -$(VERSION).gz $(BINDIR)/$(NAME)-tls-$(basename $@)
+else
 	chmod +x $(BINDIR)/$(NAME)-$(basename $@)
 	gzip -f -S -$(VERSION).gz $(BINDIR)/$(NAME)-$(basename $@)
+endif
 
 gz_release: $(bin_gz)
+
+release: bindir gz_release

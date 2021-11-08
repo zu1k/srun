@@ -34,4 +34,4 @@ sha-1 = "0.9"
 
 [features]
 default = []
-tls = ["reqwest/default-tls"]
+tls = ["reqwest/rustls-tls"]
