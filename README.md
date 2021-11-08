@@ -86,6 +86,7 @@ config file template
 ```json
 {
     "server": "http://202.194.15.87",
+    "strict_bind": true,
     "users": [
         {
             "username": "user1",
