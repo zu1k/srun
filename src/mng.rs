@@ -1,6 +1,6 @@
 use crate::{utils::get_ip_by_if_name, User};
 
-type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+use crate::Result;
 
 #[derive(Default)]
 pub struct LoginMng {
@@ -11,6 +11,7 @@ pub struct LoginMng {
     password: String,
     ip: String,
     detect_ip: bool,
+    strict_bind: bool,
 }
 
 impl LoginMng {
@@ -26,6 +27,7 @@ impl LoginMng {
             password: user.password,
             ip,
             detect_ip: false,
+            strict_bind: false,
         }
     }
 
@@ -39,10 +41,16 @@ impl LoginMng {
         self
     }
 
+    pub fn set_strict_bind(mut self, strict_bind: bool) -> Self {
+        self.strict_bind = strict_bind;
+        self
+    }
+
     pub fn login_once(&mut self) -> Result<()> {
         let mut client =
             crate::SrunClient::new(&self.auth_server, &self.username, &self.password, &self.ip)
-                .set_detect_ip(self.detect_ip);
+                .set_detect_ip(self.detect_ip)
+                .set_strict_bind(self.strict_bind);
         if let Err(e) = client.login() {
             println!("login error: {}", e);
         }

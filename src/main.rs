@@ -21,6 +21,7 @@ fn main() {
     opts.optopt("i", "ip", "ip", "");
     opts.optflag("d", "detect", "detect client ip");
     opts.optflag("", "select-ip", "select client ip");
+    opts.optflag("", "strict-bind", "strict bind ip");
     opts.optflag(
         "",
         "test",
@@ -59,6 +60,7 @@ fn config_login(matches: Matches) {
     let config_path = matches.opt_str("c").unwrap();
     match read_config_from_file(config_path) {
         Ok(config) => {
+            let strict_bind = config.strict_bind;
             let server = config
                 .server
                 .clone()
@@ -67,7 +69,7 @@ fn config_login(matches: Matches) {
                     None => "http://202.194.15.87".to_string(),
                 });
             for user in config {
-                login(&server, user, false, false)
+                login(&server, user, false, false, strict_bind)
             }
         }
         Err(e) => {
@@ -113,14 +115,22 @@ fn single_login(matches: Matches) {
         }
     };
     let test = matches.opt_present("test");
-    login(&server, User::new(username, password, ip), detect_ip, test);
+    let strict_bind = matches.opt_present("strict-bind");
+    login(
+        &server,
+        User::new(username, password, ip),
+        detect_ip,
+        test,
+        strict_bind,
+    );
 }
 
-fn login(auth_server: &str, user: User, detect_ip: bool, test: bool) {
+fn login(auth_server: &str, user: User, detect_ip: bool, test: bool, strict_bind: bool) {
     println!("login user: {:#?}", user);
     let mut mng = LoginMng::new(auth_server.to_owned(), user)
         .set_detect_ip(detect_ip)
-        .set_test_before_login(test);
+        .set_test_before_login(test)
+        .set_strict_bind(strict_bind);
     if let Err(e) = mng.login_once() {
         println!("login error: {}", e);
     }

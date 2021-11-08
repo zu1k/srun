@@ -2,9 +2,11 @@ use crate::User;
 use serde::Deserialize;
 use std::{collections::LinkedList, error::Error, fs::File, io::BufReader, path::Path};
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct Config {
     pub server: Option<String>,
+    pub strict_bind: bool,
     users: LinkedList<User>,
 }
 

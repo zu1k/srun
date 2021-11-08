@@ -11,13 +11,13 @@ SRun 3000
 
 ## Features
 
-- Binary is extremely small
 - Support both command line and config file
 - Multiple IP acquisition methods
   - User Specified
   - Auto detect
   - User select
   - Query by NIC name
+- Support strict bind
 - Support multiple users login, suitable for multi-dial
 - Support multi CPU architecture
 - Support multi system

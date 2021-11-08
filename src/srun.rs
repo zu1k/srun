@@ -1,9 +1,12 @@
-use crate::param_i;
+use crate::{param_i, Result};
 use hmac::{Hmac, Mac, NewMac};
 use md5::Md5;
+use reqwest::blocking::{Client, ClientBuilder};
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
 use std::{
+    net::IpAddr,
+    str::FromStr,
     thread,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -19,6 +22,7 @@ pub struct SrunClient<'s> {
     password: &'s str,
     ip: String,
     detect_ip: bool,
+    strict_bind: bool,
 
     acid: i32,
     token: String,
@@ -60,21 +64,41 @@ impl<'s> SrunClient<'s> {
         self
     }
 
-    fn get_token(&mut self) -> Result<String, Box<dyn std::error::Error>> {
+    pub fn set_strict_bind(mut self, strict_bind: bool) -> Self {
+        self.strict_bind = strict_bind;
+        self
+    }
+
+    pub fn get_http_client(&self) -> Result<Client> {
+        Ok(if self.strict_bind && !self.ip.is_empty() {
+            let local_addr = IpAddr::from_str(&self.ip)?;
+            ClientBuilder::default()
+                .local_address(local_addr)
+                .connect_timeout(Duration::from_secs(3))
+                .build()?
+        } else {
+            Client::default()
+        })
+    }
+
+    fn get_token(&mut self) -> Result<String> {
         if !self.detect_ip && self.ip.is_empty() {
             println!("need ip");
             return Err(Box::new(SrunError::IpUndefinedError));
         }
 
         self.time = unix_second() - 2;
-        let resp = ureq::get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str())
-            .query("callback", "sdu")
-            .query("username", self.username)
-            .query("ip", &self.ip)
-            .query("_", &self.time.to_string())
-            .call()?
-            .into_string()?;
-        let resp = resp.as_bytes();
+        let resp = self
+            .get_http_client()?
+            .get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str())
+            .query(&vec![
+                ("callback", "sdu"),
+                ("username", self.username),
+                ("ip", &self.ip),
+                ("_", &self.time.to_string()),
+            ])
+            .send()?
+            .bytes()?;
 
         let challenge: ChallengeResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
         println!("{:#?}", challenge);
@@ -92,7 +116,7 @@ impl<'s> SrunClient<'s> {
         Ok(self.token.clone())
     }
 
-    pub fn login(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn login(&mut self) -> Result<()> {
         self.get_token()?;
 
         if self.ip.is_empty() {
@@ -134,25 +158,27 @@ impl<'s> SrunClient<'s> {
         println!("will try at most 10 times...");
         let mut result = LoginResponse::default();
         for ti in 1..=10 {
-            let resp = ureq::get(format!("{}{}", self.auth_server, PATH_LOGIN).as_str())
-                .query("callback", "sdu")
-                .query("action", "login")
-                .query("username", self.username)
-                .query("password", format!("{{MD5}}{}", hmd5).as_str())
-                .query("ip", &self.ip)
-                .query("ac_id", self.acid.to_string().as_str())
-                .query("n", self.n.to_string().as_str())
-                .query("type", self.stype.to_string().as_str())
-                .query("os", &self.os)
-                .query("name", &self.name)
-                .query("double_stack", self.double_stack.to_string().as_str())
-                .query("info", &param_i)
-                .query("chksum", &check_sum)
-                .query("_", &self.time.to_string())
-                .call()?
-                .into_string()?;
-
-            let resp = resp.as_bytes();
+            let resp = self
+                .get_http_client()?
+                .get(format!("{}{}", self.auth_server, PATH_LOGIN).as_str())
+                .query(&vec![
+                    ("callback", "sdu"),
+                    ("action", "login"),
+                    ("username", self.username),
+                    ("password", &format!("{{MD5}}{}", hmd5)),
+                    ("ip", &self.ip),
+                    ("ac_id", self.acid.to_string().as_str()),
+                    ("n", self.n.to_string().as_str()),
+                    ("type", self.stype.to_string().as_str()),
+                    ("os", &self.os),
+                    ("name", &self.name),
+                    ("double_stack", &self.double_stack.to_string()),
+                    ("info", &param_i),
+                    ("chksum", &check_sum),
+                    ("_", &self.time.to_string()),
+                ])
+                .send()?
+                .bytes()?;
             result = serde_json::from_slice(&resp[4..resp.len() - 1])?;
             if !result.access_token.is_empty() {
                 println!("try {}: success\n{:#?}", ti, result);
