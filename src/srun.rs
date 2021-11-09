@@ -1,4 +1,4 @@
-use crate::{param_i, Result};
+use crate::{param_i, utils::get_ip_by_if_name, Result, User};
 use hmac::{Hmac, Mac, NewMac};
 use md5::Md5;
 use reqwest::blocking::{Client, ClientBuilder};
@@ -15,22 +15,27 @@ const PATH_GET_CHALLENGE: &str = "/cgi-bin/get_challenge";
 const PATH_LOGIN: &str = "/cgi-bin/srun_portal";
 
 #[derive(Default, Debug)]
-pub struct SrunClient<'s> {
-    auth_server: &'s str,
+pub struct SrunClient {
+    auth_server: String,
 
-    username: &'s str,
-    password: &'s str,
+    username: String,
+    password: String,
     ip: String,
     detect_ip: bool,
     strict_bind: bool,
 
+    retry_delay: u32, // millis
+    retry_times: u32,
+    test_before_login: bool,
+
     acid: i32,
-    token: String,
-    n: i32,
-    stype: i32,
     double_stack: i32,
     os: String,
     name: String,
+
+    token: String,
+    n: i32,
+    stype: i32,
     time: u64,
 }
 
@@ -42,30 +47,64 @@ quick_error! {
     }
 }
 
-impl<'s> SrunClient<'s> {
-    pub fn new(auth_server: &'s str, username: &'s str, password: &'s str, ip: &'s str) -> Self {
+impl SrunClient {
+    pub fn new_from_user(auth_server: &str, user: User) -> Self {
+        let ip = user
+            .ip
+            .unwrap_or_else(|| get_ip_by_if_name(&user.if_name.unwrap()).unwrap_or_default());
         Self {
-            username,
-            password,
-            ip: ip.to_owned(),
-            auth_server,
+            auth_server: auth_server.to_owned(),
+            username: user.username,
+            password: user.password,
+            ip,
             acid: 12,
             n: 200,
             stype: 1,
-            double_stack: 0,
             os: "Windows 10".to_string(),
             name: "Windows".to_string(),
+            retry_delay: 300,
+            retry_times: 10,
             ..Default::default()
         }
     }
 
-    pub fn set_detect_ip(mut self, detect: bool) -> Self {
-        self.detect_ip = detect;
+    pub fn set_detect_ip(mut self, b: bool) -> Self {
+        self.detect_ip = b;
         self
     }
 
-    pub fn set_strict_bind(mut self, strict_bind: bool) -> Self {
-        self.strict_bind = strict_bind;
+    pub fn set_strict_bind(mut self, b: bool) -> Self {
+        self.strict_bind = b;
+        self
+    }
+
+    pub fn set_double_stack(mut self, b: bool) -> Self {
+        self.double_stack = b as i32;
+        self
+    }
+
+    pub fn set_acid(&mut self, acid: i32) {
+        self.acid = acid;
+    }
+
+    pub fn set_os(&mut self, os: &str) {
+        self.os = os.to_owned();
+    }
+
+    pub fn set_name(&mut self, name: &str) {
+        self.name = name.to_owned();
+    }
+
+    pub fn set_retry_delay(&mut self, d: u32) {
+        self.retry_delay = d;
+    }
+
+    pub fn set_retry_times(&mut self, t: u32) {
+        self.retry_times = t;
+    }
+
+    pub fn set_test_before_login(mut self, b: bool) -> Self {
+        self.test_before_login = b;
         self
     }
 
@@ -93,7 +132,7 @@ impl<'s> SrunClient<'s> {
             .get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str())
             .query(&vec![
                 ("callback", "sdu"),
-                ("username", self.username),
+                ("username", &self.username),
                 ("ip", &self.ip),
                 ("_", &self.time.to_string()),
             ])
@@ -131,8 +170,8 @@ impl<'s> SrunClient<'s> {
         };
 
         let param_i = param_i(
-            self.username,
-            self.password,
+            &self.username,
+            &self.password,
             &self.ip,
             self.acid,
             &self.token,
@@ -141,7 +180,7 @@ impl<'s> SrunClient<'s> {
         let check_sum = {
             let check_sum = vec![
                 "",
-                self.username,
+                &self.username,
                 &hmd5,
                 &self.acid.to_string(),
                 &self.ip,
@@ -157,14 +196,14 @@ impl<'s> SrunClient<'s> {
 
         println!("will try at most 10 times...");
         let mut result = LoginResponse::default();
-        for ti in 1..=10 {
+        for ti in 1..=self.retry_times {
             let resp = self
                 .get_http_client()?
                 .get(format!("{}{}", self.auth_server, PATH_LOGIN).as_str())
                 .query(&vec![
                     ("callback", "sdu"),
                     ("action", "login"),
-                    ("username", self.username),
+                    ("username", &self.username),
                     ("password", &format!("{{MD5}}{}", hmd5)),
                     ("ip", &self.ip),
                     ("ac_id", self.acid.to_string().as_str()),
@@ -181,11 +220,11 @@ impl<'s> SrunClient<'s> {
                 .bytes()?;
             result = serde_json::from_slice(&resp[4..resp.len() - 1])?;
             if !result.access_token.is_empty() {
-                println!("try {}: success\n{:#?}", ti, result);
+                println!("try {}/{}: success\n{:#?}", ti, self.retry_times, result);
                 return Ok(());
             }
-            println!("try {}: failed", ti);
-            thread::sleep(Duration::from_millis(300));
+            println!("try {}/{}: failed", ti, self.retry_times);
+            thread::sleep(Duration::from_millis(self.retry_delay as u64));
         }
         println!("{:#?}", result);
         Ok(())

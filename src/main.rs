@@ -1,5 +1,5 @@
 use getopts::{Matches, Options};
-use sdusrun::{mng::LoginMng, read_config_from_file, select_ip, User};
+use sdusrun::{read_config_from_file, select_ip, SrunClient, User};
 use std::env;
 
 fn print_usage(program: &str, opts: &Options) {
@@ -27,6 +27,12 @@ fn main() {
         "test",
         "test before login, only avaiable for single user",
     );
+
+    opts.optopt("", "acid", "acid", "");
+    opts.optopt("", "os", "os, e.g. Windows", "");
+    opts.optopt("", "name", "name, e.g. Windows 98", "");
+    opts.optopt("", "retry-delay", "retry delay, default 300 millis", "");
+    opts.optopt("", "retry-times", "retry times, default 10 times", "");
 
     if args.len() < 2 {
         print_usage(&program, &opts);
@@ -60,7 +66,7 @@ fn config_login(matches: Matches) {
     let config_path = matches.opt_str("c").unwrap();
     match read_config_from_file(config_path) {
         Ok(config) => {
-            let strict_bind = config.strict_bind;
+            let config_i = config.clone();
             let server = config
                 .server
                 .clone()
@@ -68,8 +74,30 @@ fn config_login(matches: Matches) {
                     Some(u) => u,
                     None => "http://202.194.15.87".to_string(),
                 });
-            for user in config {
-                login(&server, user, false, false, strict_bind)
+            for user in config_i {
+                println!("login user: {:#?}", user);
+                let mut mng = SrunClient::new_from_user(&server, user)
+                    .set_strict_bind(config.strict_bind)
+                    .set_double_stack(config.double_stack);
+                if let Some(acid) = config.acid {
+                    mng.set_acid(acid);
+                }
+                if let Some(ref os) = config.os {
+                    mng.set_os(os);
+                }
+                if let Some(ref name) = config.name {
+                    mng.set_name(name);
+                }
+                if let Some(retry_delay) = config.retry_delay {
+                    mng.set_retry_delay(retry_delay);
+                }
+                if let Some(retry_times) = config.retry_times {
+                    mng.set_retry_times(retry_times);
+                }
+
+                if let Err(e) = mng.login() {
+                    println!("login error: {}", e);
+                }
             }
         }
         Err(e) => {
@@ -79,7 +107,7 @@ fn config_login(matches: Matches) {
 }
 
 fn single_login(matches: Matches) {
-    let server = match matches.opt_str("s") {
+    let auth_server = match matches.opt_str("s") {
         Some(u) => u,
         None => "http://202.194.15.87".to_string(),
     };
@@ -116,22 +144,40 @@ fn single_login(matches: Matches) {
     };
     let test = matches.opt_present("test");
     let strict_bind = matches.opt_present("strict-bind");
-    login(
-        &server,
-        User::new(username, password, ip),
-        detect_ip,
-        test,
-        strict_bind,
-    );
-}
 
-fn login(auth_server: &str, user: User, detect_ip: bool, test: bool, strict_bind: bool) {
+    let user = User {
+        username,
+        password,
+        ip: Some(ip),
+        if_name: None,
+    };
     println!("login user: {:#?}", user);
-    let mut mng = LoginMng::new(auth_server.to_owned(), user)
+    let mut mng = SrunClient::new_from_user(&auth_server, user)
         .set_detect_ip(detect_ip)
         .set_test_before_login(test)
         .set_strict_bind(strict_bind);
-    if let Err(e) = mng.login_once() {
+
+    if let Some(acid) = matches.opt_str("acid") {
+        mng.set_acid(acid.parse().unwrap());
+    }
+
+    if let Some(ref os) = matches.opt_str("os") {
+        mng.set_os(os);
+    }
+
+    if let Some(ref name) = matches.opt_str("name") {
+        mng.set_name(name);
+    }
+
+    if let Some(retry_delay) = matches.opt_str("retry-delay") {
+        mng.set_retry_delay(retry_delay.parse().unwrap_or(300));
+    }
+
+    if let Some(retry_times) = matches.opt_str("retry-times") {
+        mng.set_retry_times(retry_times.parse().unwrap_or(10));
+    }
+
+    if let Err(e) = mng.login() {
         println!("login error: {}", e);
     }
 }

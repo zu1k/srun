@@ -7,6 +7,12 @@ use std::{collections::LinkedList, error::Error, fs::File, io::BufReader, path::
 pub struct Config {
     pub server: Option<String>,
     pub strict_bind: bool,
+    pub double_stack: bool,
+    pub acid: Option<i32>,
+    pub os: Option<String>,
+    pub name: Option<String>,
+    pub retry_delay: Option<u32>,
+    pub retry_times: Option<u32>,
     users: LinkedList<User>,
 }
 
