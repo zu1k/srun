@@ -1,14 +1,10 @@
 NAME=sdusrun
-TARGET=x86_64-unknown-linux-musl
 include scripts/Makefile.release
 
 all: fmt clippy cbuild
 
 cbuild:
 	cargo build
-
-xbuild:
-	xargo build --target $(TARGET)
 
 clean:
 	cargo clean
