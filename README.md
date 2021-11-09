@@ -88,17 +88,23 @@ config file template
 ```json
 {
     "server": "http://202.194.15.87",
-    "strict_bind": true,
+    "strict_bind": false,
+    "double_stack": false,
+    "retry_delay": 300,
+    "retry_times": 10,
+    "acid": 12,
+    "os": "Windows",
+    "name": "Windows 98",
     "users": [
         {
-            "username": "user1",
-            "password": "password1",
-            "ip": "10.1.2.3"
+            "username": "",
+            "password": "",
+            "ip": ""
         },
         {
-            "username": "user2",
-            "password": "password2",
-            "if_name": "eth0"
+            "username": "",
+            "password": "",
+            "ip": ""
         }
     ]
 }
