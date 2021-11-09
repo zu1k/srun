@@ -7,7 +7,7 @@
 [![Build](https://github.com/zu1k/sdusrun/actions/workflows/build.yml/badge.svg)](https://github.com/zu1k/sdusrun/actions/workflows/build.yml)
 [![GitHub license](https://img.shields.io/github/license/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/blob/master/LICENSE)
 
-SRun 3000
+SRun authentication system login tools. [compatible versions](https://github.com/zu1k/sdusrun/issues/4)
 
 ## Features
 
