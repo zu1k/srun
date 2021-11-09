@@ -194,7 +194,7 @@ impl SrunClient {
             format!("{:x}", sha1_hasher.finalize())
         };
 
-        println!("will try at most 10 times...");
+        println!("will try at most {} times...", self.retry_times);
         let mut result = LoginResponse::default();
         for ti in 1..=self.retry_times {
             let resp = self
