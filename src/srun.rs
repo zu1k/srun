@@ -1,4 +1,8 @@
-use crate::{param_i, utils::get_ip_by_if_name, Result, User};
+use crate::{
+    param_i,
+    utils::{self, get_ip_by_if_name},
+    Result, User,
+};
 use hmac::{Hmac, Mac, NewMac};
 use md5::Md5;
 use reqwest::blocking::{Client, ClientBuilder};
@@ -156,6 +160,16 @@ impl SrunClient {
     }
 
     pub fn login(&mut self) -> Result<()> {
+        if self.test_before_login {
+            if let Ok(d) = utils::tcp_ping("baidu.com:80") {
+                println!(
+                    "Network already connected: tcping baidu.com:80, delay: {}ms",
+                    d
+                );
+                return Ok(());
+            }
+        }
+
         self.get_token()?;
 
         if self.ip.is_empty() {

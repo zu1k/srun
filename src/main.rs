@@ -14,7 +14,7 @@ fn main() {
     let mut opts = Options::new();
     opts.optopt("s", "server", "auth server", "");
     opts.optopt("c", "config", "config file path", "");
-    opts.optflag("", "continue", "continuous login");
+    opts.optflag("", "continue", "[Unimplemented] continuous login");
     // login
     opts.optopt("u", "username", "username", "");
     opts.optopt("p", "password", "password", "");
@@ -22,11 +22,7 @@ fn main() {
     opts.optflag("d", "detect", "detect client ip");
     opts.optflag("", "select-ip", "select client ip");
     opts.optflag("", "strict-bind", "strict bind ip");
-    opts.optflag(
-        "",
-        "test",
-        "test before login, only avaiable for single user",
-    );
+    opts.optflag("", "test", "test network connection before login");
 
     opts.optopt("", "acid", "acid", "");
     opts.optopt("", "os", "os, e.g. Windows", "");
@@ -76,26 +72,26 @@ fn config_login(matches: Matches) {
                 });
             for user in config_i {
                 println!("login user: {:#?}", user);
-                let mut mng = SrunClient::new_from_user(&server, user)
+                let mut client = SrunClient::new_from_user(&server, user)
                     .set_strict_bind(config.strict_bind)
                     .set_double_stack(config.double_stack);
                 if let Some(acid) = config.acid {
-                    mng.set_acid(acid);
+                    client.set_acid(acid);
                 }
                 if let Some(ref os) = config.os {
-                    mng.set_os(os);
+                    client.set_os(os);
                 }
                 if let Some(ref name) = config.name {
-                    mng.set_name(name);
+                    client.set_name(name);
                 }
                 if let Some(retry_delay) = config.retry_delay {
-                    mng.set_retry_delay(retry_delay);
+                    client.set_retry_delay(retry_delay);
                 }
                 if let Some(retry_times) = config.retry_times {
-                    mng.set_retry_times(retry_times);
+                    client.set_retry_times(retry_times);
                 }
 
-                if let Err(e) = mng.login() {
+                if let Err(e) = client.login() {
                     println!("login error: {}", e);
                 }
             }
@@ -152,32 +148,32 @@ fn single_login(matches: Matches) {
         if_name: None,
     };
     println!("login user: {:#?}", user);
-    let mut mng = SrunClient::new_from_user(&auth_server, user)
+    let mut client = SrunClient::new_from_user(&auth_server, user)
         .set_detect_ip(detect_ip)
         .set_test_before_login(test)
         .set_strict_bind(strict_bind);
 
     if let Some(acid) = matches.opt_str("acid") {
-        mng.set_acid(acid.parse().unwrap());
+        client.set_acid(acid.parse().unwrap());
     }
 
     if let Some(ref os) = matches.opt_str("os") {
-        mng.set_os(os);
+        client.set_os(os);
     }
 
     if let Some(ref name) = matches.opt_str("name") {
-        mng.set_name(name);
+        client.set_name(name);
     }
 
     if let Some(retry_delay) = matches.opt_str("retry-delay") {
-        mng.set_retry_delay(retry_delay.parse().unwrap_or(300));
+        client.set_retry_delay(retry_delay.parse().unwrap_or(300));
     }
 
     if let Some(retry_times) = matches.opt_str("retry-times") {
-        mng.set_retry_times(retry_times.parse().unwrap_or(10));
+        client.set_retry_times(retry_times.parse().unwrap_or(10));
     }
 
-    if let Err(e) = mng.login() {
+    if let Err(e) = client.login() {
         println!("login error: {}", e);
     }
 }

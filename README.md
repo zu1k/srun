@@ -24,6 +24,8 @@ SRun authentication system login tools. [compatible versions](https://github.com
 
 ## Usage
 
+[Pre-built binaries](https://github.com/zu1k/sdusrun/releases)
+
 ### CMD mode
 
 ```

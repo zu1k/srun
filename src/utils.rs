@@ -12,8 +12,7 @@ quick_error! {
     }
 }
 
-#[allow(dead_code)]
-fn tcp_ping(addr: &str) -> Result<u16> {
+pub fn tcp_ping(addr: &str) -> Result<u16> {
     let addr = addr.to_socket_addrs()?.next();
     if addr.is_none() {
         return Err(Box::new(UtilError::AddrResolveError));
