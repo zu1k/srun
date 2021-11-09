@@ -30,6 +30,8 @@ SRun 3000
 ./sdusrun login -u USERNAME -p PASSWORD -i IP [-s AUTH_SERVER]
 ```
 
+`AUTH_SERVER` should contain protocols, e.g. `http://10.0.0.1`.
+
 #### Which IP to be authorized?
 
 SDUSRun support three methods of specifying IP:
