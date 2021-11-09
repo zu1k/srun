@@ -118,6 +118,19 @@ If your IP will not change, you can use `ip` to specify directly.
 
 But for multi-dial, IP may be automatically assigned by DHCP and may change, at this time we suggest to use `if_name` to specify the corresponding NIC name, we will automatically query the IP under that NIC as the IP to be authorized.
 
+### Operator selection
+
+Some colleges support network operator selection, which implemented by append the operator code to the username.
+
+Operator code:
+
+- `chinanet`: 中国电信
+- `cmcc`: 中国移动
+- `unicom`: 中国联通
+- `xn`: 校园网
+
+For example, if you choose `cmcc`, just append `@cmcc` to your username, like `202112345@cmcc`.
+
 ### TLS support
 
 To keep the binary as small as possible, the pre-compiled binary remove the non-essential `tls` support
