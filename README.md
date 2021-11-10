@@ -99,14 +99,14 @@ config file template
     "name": "Windows 98",
     "users": [
         {
-            "username": "",
-            "password": "",
-            "ip": ""
+            "username": "username1",
+            "password": "password1",
+            "ip": "10.1.2.3"
         },
         {
-            "username": "",
-            "password": "",
-            "ip": ""
+            "username": "username2@cmcc",
+            "password": "password2",
+            "if_name": "macvlan1"
         }
     ]
 }
