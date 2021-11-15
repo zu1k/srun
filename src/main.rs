@@ -1,42 +1,70 @@
 use getopts::{Matches, Options};
+use lazy_static::lazy_static;
 use sdusrun::{read_config_from_file, select_ip, SrunClient, User};
 use std::env;
 
-fn print_usage(program: &str, opts: &Options) {
-    let brief = format!("Usage: {} ACTION [options]\n\nActions: login", program);
-    print!("{}", opts.usage(&brief));
+lazy_static! {
+    static ref LOGIN_OPTS: Options = {
+        let mut opts = Options::new();
+        opts.optflag("h", "help", "print help message");
+        opts.optopt("s", "server", "auth server", "");
+        opts.optopt("c", "config", "config file path", "");
+        opts.optflag("", "continue", "[Unimplemented] continuous login");
+        opts.optopt("u", "username", "username", "");
+        opts.optopt("p", "password", "password", "");
+        opts.optopt("i", "ip", "ip", "");
+        opts.optflag("d", "detect", "detect client ip");
+        opts.optflag("", "select-ip", "select client ip");
+        opts.optflag("", "strict-bind", "strict bind ip");
+        opts.optflag("", "test", "test network connection before login");
+        opts.optopt("", "acid", "acid", "");
+        opts.optopt("", "os", "os, e.g. Windows", "");
+        opts.optopt("", "name", "name, e.g. Windows 98", "");
+        opts.optopt("", "retry-delay", "retry delay, default 300 millis", "");
+        opts.optopt("", "retry-times", "retry times, default 10 times", "");
+        opts
+    };
+    static ref LOGOUT_OPTS: Options = {
+        let mut opts = Options::new();
+        opts.optflag("h", "help", "print help message");
+        opts.optopt("s", "server", "auth server", "");
+        opts.optopt("u", "username", "username", "");
+        opts.optopt("i", "ip", "ip", "");
+        opts.optflag("d", "detect", "detect client ip");
+        opts.optflag("", "select-ip", "select client ip");
+        opts.optflag("", "strict-bind", "strict bind ip");
+        opts.optopt("", "acid", "acid", "");
+        opts
+    };
+}
+
+fn print_usage(opts: Option<&Options>) {
+    let brief = "Usage: sdusrun ACTION [options]\n\nActions: login | logout".to_string();
+    if let Some(opts) = opts {
+        print!("{}", opts.usage(&brief));
+    } else {
+        println!("{}", brief);
+    }
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
-
-    let mut opts = Options::new();
-    opts.optopt("s", "server", "auth server", "");
-    opts.optopt("c", "config", "config file path", "");
-    opts.optflag("", "continue", "[Unimplemented] continuous login");
-    // login
-    opts.optopt("u", "username", "username", "");
-    opts.optopt("p", "password", "password", "");
-    opts.optopt("i", "ip", "ip", "");
-    opts.optflag("d", "detect", "detect client ip");
-    opts.optflag("", "select-ip", "select client ip");
-    opts.optflag("", "strict-bind", "strict bind ip");
-    opts.optflag("", "test", "test network connection before login");
-
-    opts.optopt("", "acid", "acid", "");
-    opts.optopt("", "os", "os, e.g. Windows", "");
-    opts.optopt("", "name", "name, e.g. Windows 98", "");
-    opts.optopt("", "retry-delay", "retry delay, default 300 millis", "");
-    opts.optopt("", "retry-times", "retry times, default 10 times", "");
-
     if args.len() < 2 {
-        print_usage(&program, &opts);
+        print_usage(None);
         return;
     }
 
-    let command = args[1].clone();
-    let matches = match opts.parse(&args[2..]) {
+    match args[1].as_str() {
+        "login" => login_match(&args),
+        "logout" => logout_match(&args),
+        _ => {
+            print_usage(None);
+        }
+    }
+}
+
+fn login_match(args: &[String]) {
+    let matches = match LOGIN_OPTS.parse(args) {
         Ok(m) => m,
         Err(e) => {
             println!("parse args error: {}", e);
@@ -44,17 +72,28 @@ fn main() {
         }
     };
 
-    match command.as_str() {
-        "login" => {
-            if matches.opt_present("c") {
-                config_login(matches);
-            } else {
-                single_login(matches);
-            }
+    if matches.opt_present("h") {
+        print_usage(Some(&LOGIN_OPTS));
+    } else if matches.opt_present("c") {
+        config_login(matches);
+    } else {
+        single_login(matches);
+    }
+}
+
+fn logout_match(args: &[String]) {
+    let matches = match LOGOUT_OPTS.parse(args) {
+        Ok(m) => m,
+        Err(e) => {
+            println!("parse args error: {}", e);
+            return;
         }
-        _ => {
-            print_usage(&program, &opts);
-        }
+    };
+
+    if matches.opt_present("h") {
+        print_usage(Some(&LOGOUT_OPTS));
+    } else {
+        logout(matches)
     }
 }
 
@@ -175,5 +214,48 @@ fn single_login(matches: Matches) {
 
     if let Err(e) = client.login() {
         println!("login error: {}", e);
+    }
+}
+
+fn logout(matches: Matches) {
+    let auth_server = match matches.opt_str("s") {
+        Some(u) => u,
+        None => "http://202.194.15.87".to_string(),
+    };
+    let username = match matches.opt_str("u") {
+        Some(u) => u,
+        None => {
+            println!("need username");
+            return;
+        }
+    };
+    let detect_ip = matches.opt_present("d");
+    let ip = match matches.opt_str("i") {
+        Some(u) => u,
+        None => {
+            if matches.opt_present("select-ip") {
+                select_ip().unwrap_or_default()
+            } else if detect_ip {
+                String::new()
+            } else {
+                println!("need ip");
+                println!("  1. use '-i IP' to specify ip");
+                println!("  2. use '-d' to auto detect ip");
+                println!("  3. use '--select-ip' to select ip");
+                return;
+            }
+        }
+    };
+    let strict_bind = matches.opt_present("strict-bind");
+    let mut client = SrunClient::new_for_logout(&auth_server, &username, &ip)
+        .set_detect_ip(detect_ip)
+        .set_strict_bind(strict_bind);
+
+    if let Some(acid) = matches.opt_str("acid") {
+        client.set_acid(acid.parse().unwrap());
+    }
+
+    if let Err(e) = client.logout() {
+        println!("logout error: {}", e);
     }
 }

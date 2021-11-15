@@ -16,7 +16,7 @@ use std::{
 };
 
 const PATH_GET_CHALLENGE: &str = "/cgi-bin/get_challenge";
-const PATH_LOGIN: &str = "/cgi-bin/srun_portal";
+const PATH_PORTAL: &str = "/cgi-bin/srun_portal";
 
 #[derive(Default, Debug)]
 pub struct SrunClient {
@@ -68,6 +68,15 @@ impl SrunClient {
             name: "Windows".to_string(),
             retry_delay: 300,
             retry_times: 10,
+            ..Default::default()
+        }
+    }
+
+    pub fn new_for_logout(auth_server: &str, username: &str, ip: &str) -> Self {
+        Self {
+            auth_server: auth_server.to_owned(),
+            username: username.to_owned(),
+            ip: ip.to_owned(),
             ..Default::default()
         }
     }
@@ -209,11 +218,11 @@ impl SrunClient {
         };
 
         println!("will try at most {} times...", self.retry_times);
-        let mut result = LoginResponse::default();
+        let mut result = PortalResponse::default();
         for ti in 1..=self.retry_times {
             let resp = self
                 .get_http_client()?
-                .get(format!("{}{}", self.auth_server, PATH_LOGIN).as_str())
+                .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str())
                 .query(&vec![
                     ("callback", "sdu"),
                     ("action", "login"),
@@ -243,6 +252,28 @@ impl SrunClient {
         println!("{:#?}", result);
         Ok(())
     }
+
+    pub fn logout(&mut self) -> Result<()> {
+        if self.detect_ip {
+            self.get_token()?;
+        }
+        let resp = self
+            .get_http_client()?
+            .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str())
+            .query(&vec![
+                ("callback", "sdu"),
+                ("action", "logout"),
+                ("username", &self.username),
+                ("ip", &self.ip),
+                ("ac_id", self.acid.to_string().as_str()),
+                ("_", unix_second().to_string().as_str()),
+            ])
+            .send()?
+            .bytes()?;
+        let result: PortalResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+        println!("{:#?}", result);
+        Ok(())
+    }
 }
 
 #[allow(dead_code)]
@@ -262,7 +293,7 @@ struct ChallengeResponse {
 #[allow(dead_code)]
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
-struct LoginResponse {
+struct PortalResponse {
     #[serde(rename(deserialize = "ServerFlag"))]
     server_flag: i32,
     #[serde(rename(deserialize = "ServicesIntfServerIP"))]
