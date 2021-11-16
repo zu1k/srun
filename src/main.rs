@@ -17,6 +17,7 @@ lazy_static! {
         opts.optflag("", "select-ip", "select client ip");
         opts.optflag("", "strict-bind", "strict bind ip");
         opts.optflag("", "test", "test network connection before login");
+        opts.optflag("", "double-stack", "enable double stack");
         opts.optopt("", "acid", "acid", "");
         opts.optopt("", "os", "os, e.g. Windows", "");
         opts.optopt("", "name", "name, e.g. Windows 98", "");
@@ -190,7 +191,8 @@ fn single_login(matches: Matches) {
     let mut client = SrunClient::new_from_user(&auth_server, user)
         .set_detect_ip(detect_ip)
         .set_test_before_login(test)
-        .set_strict_bind(strict_bind);
+        .set_strict_bind(strict_bind)
+        .set_double_stack(matches.opt_present("double-stack"));
 
     if let Some(acid) = matches.opt_str("acid") {
         client.set_acid(acid.parse().unwrap());
