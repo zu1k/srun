@@ -1,6 +1,6 @@
 [package]
 name = "sdusrun"
-version = "0.4.5"
+version = "0.4.6"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
 description = "SRun authentication system login tools"
