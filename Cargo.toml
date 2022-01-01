@@ -21,7 +21,7 @@ panic = "abort"
 [dependencies]
 base64 = { git = "https://github.com/marshallpierce/rust-base64.git" }
 getopts = "0.2"
-hmac = "0.11"
+hmac = "0.12"
 lazy_static = "1.4"
 md-5 = "0.9"
 pnet_datalink = "0.28"
