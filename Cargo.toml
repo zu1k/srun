@@ -1,6 +1,6 @@
 [package]
 name = "sdusrun"
-version = "0.4.6"
+version = "0.4.7"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
 description = "SRun authentication system login tools"
@@ -12,18 +12,19 @@ exclude = [".github/"]
 
 
 [profile.release]
+strip = true
 lto = true
-opt-level = "z"
+opt-level = "s"
 codegen-units = 1
 panic = "abort"
 
 
 [dependencies]
-base64 = { git = "https://github.com/marshallpierce/rust-base64.git" }
+base64 = "0.20.0-alpha"
 getopts = "0.2"
-hmac = "0.11"
+hmac = "0.12"
 lazy_static = "1.4"
-md-5 = "0.9"
+md-5 = "0.10"
 pnet_datalink = "0.28"
 quick-error = "2.0"
 reqwest = { version = "0.11", default-features = false, features = ["blocking"] }

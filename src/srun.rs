@@ -3,7 +3,7 @@ use crate::{
     utils::{self, get_ip_by_if_name},
     Result, User,
 };
-use hmac::{Hmac, Mac, NewMac};
+use hmac::{Hmac, Mac};
 use md5::Md5;
 use reqwest::blocking::{Client, ClientBuilder};
 use serde::Deserialize;
@@ -186,7 +186,7 @@ impl SrunClient {
         }
 
         let hmd5 = {
-            let mut mac = Hmac::<Md5>::new_from_slice(self.token.as_bytes()).expect("aa");
+            let mut mac = Hmac::<Md5>::new_from_slice(self.token.as_bytes())?;
             mac.update(self.password.as_bytes());
             let result = mac.finalize();
             format!("{:x}", result.into_bytes())
