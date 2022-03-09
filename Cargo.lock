@@ -455,15 +455,15 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pnet_base"
-version = "0.28.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25488cd551a753dcaaa6fffc9f69a7610a412dd8954425bf7ffad5f7d1156fb8"
+checksum = "8205fe084bd43a3af79b3155c19feddd62e733640498842e631a2ffe107d1538"
 
 [[package]]
 name = "pnet_datalink"
-version = "0.28.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4d1f8ab1ef6c914cf51dc5dfe0be64088ea5f3b08bbf5a31abc70356d271198"
+checksum = "6f85aef5e52e22ff06b1b11f2eb6d52959a9e0ecad3cb3f5cc2d78cadc077f0e"
 dependencies = [
  "ipnetwork",
  "libc",
@@ -474,9 +474,9 @@ dependencies = [
 
 [[package]]
 name = "pnet_sys"
-version = "0.28.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9a3f32b0df45515befd19eed04616f6b56a488da92afc61164ef455e955f07f"
+checksum = "028c87a5e3a48fc07df099a2025f2ef16add5993712e1494ba69a6707ee7ed06"
 dependencies = [
  "libc",
  "winapi",
