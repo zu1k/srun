@@ -1,4 +1,4 @@
-# SDUSRun
+# SDUSrun
 
 [![GitHub stars](https://img.shields.io/github/stars/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/network)
@@ -7,7 +7,7 @@
 [![Build](https://github.com/zu1k/sdusrun/actions/workflows/build.yml/badge.svg)](https://github.com/zu1k/sdusrun/actions/workflows/build.yml)
 [![GitHub license](https://img.shields.io/github/license/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/blob/master/LICENSE)
 
-SRun authentication system login tools. [compatible versions](https://github.com/zu1k/sdusrun/issues/4)
+Srun authentication system login tools. [compatible versions](https://github.com/zu1k/sdusrun/issues/4)
 
 ## Features
 
@@ -36,7 +36,7 @@ SRun authentication system login tools. [compatible versions](https://github.com
 
 #### Which IP to be authorized?
 
-SDUSRun support three methods of specifying IP:
+SDUSrun support three methods of specifying IP:
 
 - use `-i IP` to specify ip
 - use `-d` to auto detect ip
@@ -48,7 +48,7 @@ You need to check the IP address of each network interfaces in advance and choos
 
 ##### detect IP
 
-SDUSRun support automatic IP detection, it determines the IP address from the information returned by the authentication server.
+SDUSrun support automatic IP detection, it determines the IP address from the information returned by the authentication server.
 
 This is useful in cases where you only have one IP address to authorize.
 
@@ -58,7 +58,7 @@ If you are multidialing and have multiple legitimate IPs at the same time, you n
 
 This method is similar to the first method, except that it saves you the trouble of manually querying all the IPs.
 
-SDUSRun will query all the legitimate IPs in advance and then print a list of IPs for you to choose from.
+SDUSrun will query all the legitimate IPs in advance and then print a list of IPs for you to choose from.
 
 ```sh
 $ ./sdusrun login -u USERNAME -p PASSWORD --select-ip
@@ -79,7 +79,7 @@ Please note that when your computer has only one IP that can be authorized, we w
 
 Usually, it is sufficient to specify the information directly using command line parameters.
 
-In order to meet the needs of multi-dial users, SDUSRun support reading multiple user information from a config file.
+In order to meet the needs of multi-dial users, SDUSrun support reading multiple user information from a config file.
 
 ```
 ./sdusrun login -c config.json
@@ -141,14 +141,8 @@ If your authentication system uses `https`, You need to compile it yourself with
 cargo build --features "tls" --release
 ```
 
-### Windows
-
-You must have [WinPcap](https://www.winpcap.org/) or [npcap](https://nmap.org/npcap/) installed (tested with version WinPcap 4.1.3)
-
-(If using npcap, make sure to install with the "Install Npcap in WinPcap API-compatible Mode")
-
 ## License
 
-GPL-3.0 License
+**SDUSrun** © [zu1k](https://github.com/zu1k), Released under the [GPL-3.0](./LICENSE) License.<br>
 
-Copyright (c) 2021 zu1k <i@lgf.im>
+> Blog [zu1k.com](https://zu1k.com) · GitHub [@zu1k](https://github.com/zu1k) · Twitter [@zu1k_lv](https://twitter.com/zu1k_lv) · Telegram Channel [@peekfun](https://t.me/peekfun)

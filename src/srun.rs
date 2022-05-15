@@ -179,6 +179,7 @@ impl SrunClient {
             }
         }
 
+        // this will detect ip from response if detect_ip
         self.get_token()?;
 
         if self.ip.is_empty() {
