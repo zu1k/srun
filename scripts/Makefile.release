@@ -3,7 +3,7 @@ VERSION=$(shell git describe --tags || echo "unknown version")
 UPX=upx --best
 STRIP=llvm-strip -s
 CROSS_BUILD=cross build --release --target
-TLS=TRUE
+TLS=FALSE
 
 CROSS_TARGET_LIST = \
 	x86_64-unknown-linux-musl \

@@ -1,6 +1,6 @@
 [package]
 name = "sdusrun"
-version = "0.4.7"
+version = "0.5.0"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
 description = "SRun authentication system login tools"
@@ -23,9 +23,9 @@ panic = "abort"
 base64 = "0.20.0-alpha"
 getopts = "0.2"
 hmac = "0.12"
+if-addrs = "0.7"
 lazy_static = "1.4"
 md-5 = "0.10"
-pnet_datalink = "0.29"
 quick-error = "2.0"
 reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
 serde = { version = "1.0", features = ["derive"] }
