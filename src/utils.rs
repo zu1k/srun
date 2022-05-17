@@ -65,7 +65,7 @@ pub fn select_ip() -> Option<String> {
 
     println!("Please select your IP:");
     for (n, ip) in ips.iter().enumerate() {
-        println!("    {}. {}", n + 1, ip.1);
+        println!("    {}. {} - {}", n + 1, ip.1, ip.0);
     }
 
     for t in 1..=3 {
