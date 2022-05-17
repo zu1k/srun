@@ -1,7 +1,7 @@
 NAME=sdusrun
 BINDIR=bin
 VERSION=$(shell git describe --tags || echo "unknown version")
-UPX=upx --best
+UPX=-upx --best
 STRIP=llvm-strip -s
 CARGO_BUILD=cargo build --release --target
 CROSS_BUILD=cross build --release --target
@@ -13,7 +13,9 @@ CROSS_TARGET_LIST = \
 	aarch64-unknown-linux-musl \
 	armv7-unknown-linux-musleabihf \
 	mips-unknown-linux-musl \
-	mipsel-unknown-linux-musl
+	mipsel-unknown-linux-musl \
+	mips64-unknown-linux-muslabi64 \
+	mips64el-unknown-linux-muslabi64
 
 $(CROSS_TARGET_LIST):
 ifeq ($(TLS),TRUE)

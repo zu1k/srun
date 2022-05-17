@@ -35,4 +35,6 @@ sha-1 = "0.10"
 
 [features]
 default = []
-tls = ["reqwest/rustls-tls"]
+tls = ["rust-tls"]
+rust-tls = ["reqwest/rustls-tls"]
+native-tls = ["reqwest/default-tls"]
