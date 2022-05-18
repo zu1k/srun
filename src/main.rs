@@ -18,7 +18,7 @@ lazy_static! {
         opts.optflag("", "strict-bind", "strict bind ip");
         opts.optflag("", "test", "test network connection before login");
         opts.optflag("", "double-stack", "enable double stack");
-        opts.optopt("", "n", "n", "");
+        opts.optopt("n", "param-n", "n", "");
         opts.optopt("", "type", "type", "");
         opts.optopt("", "acid", "acid", "");
         opts.optopt("", "os", "os, e.g. Windows", "");
