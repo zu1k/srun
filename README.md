@@ -126,12 +126,14 @@ Some colleges support network operator selection, which implemented by append th
 
 Operator code:
 
-- `chinanet`: 中国电信
-- `cmcc`: 中国移动
-- `unicom`: 中国联通
-- `xn`: 校园网
+- 中国电信: [`chinanet`, `ctcc`] 
+- 中国移动: [`cmcc`] 
+- 中国联通: [`unicom`, `cucc`]
+- 校园网: [`xn`] 
 
 For example, if you choose `cmcc`, just append `@cmcc` to your username, like `202112345@cmcc`.
+
+This code needs to be confirmed by capturing packets.
 
 ### TLS support
 
