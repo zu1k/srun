@@ -1,6 +1,6 @@
 [package]
 name = "sdusrun"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["zu1k <i@lgf.im>"]
 edition = "2021"
 description = "Srun authentication system login tools"
@@ -27,14 +27,20 @@ if-addrs = "0.7"
 lazy_static = "1.4"
 md-5 = "0.10"
 quick-error = "2.0"
-reqwest = { version = "0.11", default-features = false, features = ["blocking"] }
+reqwest = { version = "0.11", default-features = false, features = ["blocking"], optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha-1 = "0.10"
-
+ureq = { git = "https://github.com/zu1k/ureq.git", branch = "connector", default-features = false, optional = true }
+socket2 = "0.4"
 
 [features]
-default = []
-tls = ["rust-tls"]
-rust-tls = ["reqwest/rustls-tls"]
-native-tls = ["reqwest/default-tls"]
+default = ["ureq"]
+tls = ["ureq-rust-tls"]
+
+# ureq
+ureq-rust-tls = ["ureq", "ureq/tls"]
+ureq-native-tls = ["ureq", "ureq/native-tls"]
+# reqwest
+reqwest-rust-tls = ["reqwest", "reqwest/rustls-tls"]
+reqwest-native-tls = ["reqwest", "reqwest/default-tls"]

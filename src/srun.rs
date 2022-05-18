@@ -5,7 +5,6 @@ use crate::{
 };
 use hmac::{Hmac, Mac};
 use md5::Md5;
-use reqwest::blocking::{Client, ClientBuilder};
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
 use std::{
@@ -121,15 +120,34 @@ impl SrunClient {
         self
     }
 
-    pub fn get_http_client(&self) -> Result<Client> {
+    #[cfg(feature = "reqwest")]
+    pub fn get_http_client(&self) -> Result<reqwest::blocking::Client> {
         Ok(if self.strict_bind && !self.ip.is_empty() {
             let local_addr = IpAddr::from_str(&self.ip)?;
-            ClientBuilder::default()
+            reqwest::blocking::ClientBuilder::default()
                 .local_address(local_addr)
                 .connect_timeout(Duration::from_secs(3))
                 .build()?
         } else {
-            Client::default()
+            reqwest::blocking::Client::default()
+        })
+    }
+
+    #[cfg(feature = "ureq")]
+    pub fn get_http_client(&self) -> Result<ureq::Agent> {
+        use crate::http_client::BindConnector;
+        use std::net::SocketAddr;
+
+        Ok(if self.strict_bind && !self.ip.is_empty() {
+            let local_addr_ip = IpAddr::from_str(&self.ip)?;
+            ureq::AgentBuilder::new()
+                .connector(BindConnector::new_bind(SocketAddr::new(local_addr_ip, 0)))
+                .timeout_connect(Duration::from_secs(5))
+                .build()
+        } else {
+            ureq::AgentBuilder::new()
+                .timeout_connect(Duration::from_secs(5))
+                .build()
         })
     }
 
@@ -140,19 +158,33 @@ impl SrunClient {
         }
 
         self.time = unix_second() - 2;
-        let resp = self
+        let req = self
             .get_http_client()?
-            .get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str())
-            .query(&vec![
-                ("callback", "sdu"),
-                ("username", &self.username),
-                ("ip", &self.ip),
-                ("_", &self.time.to_string()),
-            ])
-            .send()?
-            .bytes()?;
+            .get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str());
 
-        let challenge: ChallengeResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+        let time = self.time.to_string();
+
+        let query = vec![
+            ("callback", "sdu"),
+            ("username", &self.username),
+            ("ip", &self.ip),
+            ("_", &time),
+        ];
+
+        let challenge: ChallengeResponse = {
+            #[cfg(feature = "reqwest")]
+            {
+                let resp = req.query(&query).send()?.bytes()?;
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+            #[cfg(feature = "ureq")]
+            {
+                let resp = req.query_vec(query).call()?.into_string()?;
+                let resp = resp.as_bytes();
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+        };
+
         println!("{:#?}", challenge);
         match challenge.challenge.clone() {
             Some(token) => {
@@ -221,28 +253,48 @@ impl SrunClient {
         println!("will try at most {} times...", self.retry_times);
         let mut result = PortalResponse::default();
         for ti in 1..=self.retry_times {
-            let resp = self
+            let req = self
                 .get_http_client()?
-                .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str())
-                .query(&vec![
-                    ("callback", "sdu"),
-                    ("action", "login"),
-                    ("username", &self.username),
-                    ("password", &format!("{{MD5}}{}", hmd5)),
-                    ("ip", &self.ip),
-                    ("ac_id", self.acid.to_string().as_str()),
-                    ("n", self.n.to_string().as_str()),
-                    ("type", self.stype.to_string().as_str()),
-                    ("os", &self.os),
-                    ("name", &self.name),
-                    ("double_stack", &self.double_stack.to_string()),
-                    ("info", &param_i),
-                    ("chksum", &check_sum),
-                    ("_", &self.time.to_string()),
-                ])
-                .send()?
-                .bytes()?;
-            result = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+                .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str());
+
+            let password = format!("{{MD5}}{}", hmd5);
+            let ac_id = self.acid.to_string();
+            let n = self.n.to_string();
+            let stype = self.stype.to_string();
+            let double_stack = self.double_stack.to_string();
+            let time = self.time.to_string();
+
+            let query = vec![
+                ("callback", "sdu"),
+                ("action", "login"),
+                ("username", &self.username),
+                ("password", &password),
+                ("ip", &self.ip),
+                ("ac_id", &ac_id),
+                ("n", &n),
+                ("type", &stype),
+                ("os", &self.os),
+                ("name", &self.name),
+                ("double_stack", &double_stack),
+                ("info", &param_i),
+                ("chksum", &check_sum),
+                ("_", &time),
+            ];
+
+            result = {
+                #[cfg(feature = "reqwest")]
+                {
+                    let resp = req.query(&query).send()?.bytes()?;
+                    serde_json::from_slice(&resp[4..resp.len() - 1])?
+                }
+                #[cfg(feature = "ureq")]
+                {
+                    let resp = req.query_vec(query).call()?.into_string()?;
+                    let resp = resp.as_bytes();
+                    serde_json::from_slice(&resp[4..resp.len() - 1])?
+                }
+            };
+
             if !result.access_token.is_empty() {
                 println!("try {}/{}: success\n{:#?}", ti, self.retry_times, result);
                 return Ok(());
@@ -258,20 +310,35 @@ impl SrunClient {
         if self.detect_ip {
             self.get_token()?;
         }
-        let resp = self
+        let req = self
             .get_http_client()?
-            .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str())
-            .query(&vec![
-                ("callback", "sdu"),
-                ("action", "logout"),
-                ("username", &self.username),
-                ("ip", &self.ip),
-                ("ac_id", self.acid.to_string().as_str()),
-                ("_", unix_second().to_string().as_str()),
-            ])
-            .send()?
-            .bytes()?;
-        let result: PortalResponse = serde_json::from_slice(&resp[4..resp.len() - 1])?;
+            .get(format!("{}{}", self.auth_server, PATH_PORTAL).as_str());
+
+        let ac_id = self.acid.to_string();
+        let time = unix_second().to_string();
+        let query = vec![
+            ("callback", "sdu"),
+            ("action", "logout"),
+            ("username", &self.username),
+            ("ip", &self.ip),
+            ("ac_id", &ac_id),
+            ("_", &time),
+        ];
+
+        let result: PortalResponse = {
+            #[cfg(feature = "reqwest")]
+            {
+                let resp = req.query(&query).send()?.bytes()?;
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+            #[cfg(feature = "ureq")]
+            {
+                let resp = req.query_vec(query).call()?.into_string()?;
+                let resp = resp.as_bytes();
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+        };
+
         println!("{:#?}", result);
         Ok(())
     }

@@ -1,10 +1,10 @@
 NAME=sdusrun
 BINDIR=bin
 VERSION=$(shell git describe --tags || echo "unknown version")
-UPX=-upx --best
 STRIP=llvm-strip -s
 CARGO_BUILD=cargo build --release --target
 CROSS_BUILD=cross build --release --target
+UPX=-upx --best
 TLS=FALSE
 
 CROSS_TARGET_LIST = \
