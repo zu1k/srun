@@ -8,6 +8,9 @@ pub struct Config {
     pub server: Option<String>,
     pub strict_bind: bool,
     pub double_stack: bool,
+    pub n: Option<i32>,
+    #[serde(alias = "type")]
+    pub utype: Option<i32>,
     pub acid: Option<i32>,
     pub os: Option<String>,
     pub name: Option<String>,

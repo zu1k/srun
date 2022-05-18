@@ -18,6 +18,8 @@ lazy_static! {
         opts.optflag("", "strict-bind", "strict bind ip");
         opts.optflag("", "test", "test network connection before login");
         opts.optflag("", "double-stack", "enable double stack");
+        opts.optopt("", "n", "n", "");
+        opts.optopt("", "type", "type", "");
         opts.optopt("", "acid", "acid", "");
         opts.optopt("", "os", "os, e.g. Windows", "");
         opts.optopt("", "name", "name, e.g. Windows 98", "");
@@ -115,6 +117,12 @@ fn config_login(matches: Matches) {
                 let mut client = SrunClient::new_from_user(&server, user)
                     .set_strict_bind(config.strict_bind)
                     .set_double_stack(config.double_stack);
+                if let Some(n) = config.n {
+                    client.set_n(n);
+                }
+                if let Some(utype) = config.utype {
+                    client.set_type(utype);
+                }
                 if let Some(acid) = config.acid {
                     client.set_acid(acid);
                 }
@@ -193,6 +201,14 @@ fn single_login(matches: Matches) {
         .set_test_before_login(test)
         .set_strict_bind(strict_bind)
         .set_double_stack(matches.opt_present("double-stack"));
+
+    if let Some(n) = matches.opt_str("n") {
+        client.set_n(n.parse().unwrap());
+    }
+
+    if let Some(utype) = matches.opt_str("type") {
+        client.set_type(utype.parse().unwrap());
+    }
 
     if let Some(acid) = matches.opt_str("acid") {
         client.set_acid(acid.parse().unwrap());

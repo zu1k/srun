@@ -38,7 +38,7 @@ pub struct SrunClient {
 
     token: String,
     n: i32,
-    stype: i32,
+    utype: i32,
     time: u64,
 }
 
@@ -62,7 +62,7 @@ impl SrunClient {
             ip,
             acid: 12,
             n: 200,
-            stype: 1,
+            utype: 1,
             os: "Windows 10".to_string(),
             name: "Windows".to_string(),
             retry_delay: 300,
@@ -93,6 +93,14 @@ impl SrunClient {
     pub fn set_double_stack(mut self, b: bool) -> Self {
         self.double_stack = b as i32;
         self
+    }
+
+    pub fn set_n(&mut self, n: i32) {
+        self.n = n;
+    }
+
+    pub fn set_type(&mut self, utype: i32) {
+        self.utype = utype;
     }
 
     pub fn set_acid(&mut self, acid: i32) {
@@ -241,7 +249,7 @@ impl SrunClient {
                 &self.acid.to_string(),
                 &self.ip,
                 &self.n.to_string(),
-                &self.stype.to_string(),
+                &self.utype.to_string(),
                 &param_i,
             ]
             .join(&self.token);
@@ -260,7 +268,7 @@ impl SrunClient {
             let password = format!("{{MD5}}{}", hmd5);
             let ac_id = self.acid.to_string();
             let n = self.n.to_string();
-            let stype = self.stype.to_string();
+            let utype = self.utype.to_string();
             let double_stack = self.double_stack.to_string();
             let time = self.time.to_string();
 
@@ -272,7 +280,7 @@ impl SrunClient {
                 ("ip", &self.ip),
                 ("ac_id", &ac_id),
                 ("n", &n),
-                ("type", &stype),
+                ("type", &utype),
                 ("os", &self.os),
                 ("name", &self.name),
                 ("double_stack", &double_stack),
