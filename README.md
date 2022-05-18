@@ -94,6 +94,8 @@ config file template
     "double_stack": false,
     "retry_delay": 300,
     "retry_times": 10,
+    "n": 200,
+    "type": 1,
     "acid": 12,
     "os": "Windows",
     "name": "Windows 98",
