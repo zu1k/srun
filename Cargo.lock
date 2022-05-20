@@ -1025,7 +1025,7 @@ checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
 [[package]]
 name = "ureq"
 version = "2.4.0"
-source = "git+https://github.com/zu1k/ureq.git?branch=connector#4c756f0018a16d9d3ef13c5c72d78fae3071c981"
+source = "git+https://github.com/zu1k/ureq.git?branch=sdusrun#4c756f0018a16d9d3ef13c5c72d78fae3071c981"
 dependencies = [
  "base64 0.13.0",
  "chunked_transfer",

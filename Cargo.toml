@@ -31,7 +31,7 @@ reqwest = { version = "0.11", default-features = false, features = ["blocking"],
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha-1 = "0.10"
-ureq = { git = "https://github.com/zu1k/ureq.git", branch = "connector", default-features = false, optional = true }
+ureq = { git = "https://github.com/zu1k/ureq.git", branch = "sdusrun", default-features = false, optional = true }
 socket2 = "0.4"
 
 [features]
