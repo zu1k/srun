@@ -89,7 +89,7 @@ config file template
 
 ```json
 {
-    "server": "http://202.194.15.87",
+    "server": "http://10.0.0.1",
     "strict_bind": false,
     "double_stack": false,
     "retry_delay": 300,
