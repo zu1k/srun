@@ -9,6 +9,7 @@ homepage = "https://github.com/zu1k/sdusrun"
 repository = "https://github.com/zu1k/sdusrun"
 license = "GPL-3.0"
 exclude = [".github/"]
+build = "build.rs"
 
 
 [profile.release]

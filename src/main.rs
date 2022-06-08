@@ -110,7 +110,7 @@ fn config_login(matches: Matches) {
                 .clone()
                 .unwrap_or_else(|| match matches.opt_str("s") {
                     Some(u) => u,
-                    None => "http://10.0.0.1".to_string(),
+                    None => format!("http://{}", env!("AUTH_SERVER_IP")),
                 });
             for user in config_i {
                 println!("login user: {:#?}", user);
@@ -153,7 +153,7 @@ fn config_login(matches: Matches) {
 fn single_login(matches: Matches) {
     let auth_server = match matches.opt_str("s") {
         Some(u) => u,
-        None => "http://10.0.0.1".to_string(),
+        None => format!("http://{}", env!("AUTH_SERVER_IP")),
     };
     let username = match matches.opt_str("u") {
         Some(u) => u,
@@ -238,7 +238,7 @@ fn single_login(matches: Matches) {
 fn logout(matches: Matches) {
     let auth_server = match matches.opt_str("s") {
         Some(u) => u,
-        None => "http://10.0.0.1".to_string(),
+        None => format!("http://{}", env!("AUTH_SERVER_IP")),
     };
     let username = match matches.opt_str("u") {
         Some(u) => u,
