@@ -2,6 +2,7 @@ use base64::{
     alphabet::Alphabet,
     engine::fast_portable::{FastPortable, PAD},
 };
+use lazy_static::lazy_static;
 
 const BASE64_ALPHABET: &str = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA";
 lazy_static! {

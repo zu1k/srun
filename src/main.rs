@@ -1,45 +1,6 @@
 use getopts::{Matches, Options};
-use lazy_static::lazy_static;
 use sdusrun::{read_config_from_file, select_ip, SrunClient, User};
 use std::env;
-
-lazy_static! {
-    static ref LOGIN_OPTS: Options = {
-        let mut opts = Options::new();
-        opts.optflag("h", "help", "print help message");
-        opts.optopt("s", "server", "auth server", "");
-        opts.optopt("c", "config", "config file path", "");
-        opts.optflag("", "continue", "[Unimplemented] continuous login");
-        opts.optopt("u", "username", "username", "");
-        opts.optopt("p", "password", "password", "");
-        opts.optopt("i", "ip", "ip", "");
-        opts.optflag("d", "detect", "detect client ip");
-        opts.optflag("", "select-ip", "select client ip");
-        opts.optflag("", "strict-bind", "strict bind ip");
-        opts.optflag("", "test", "test network connection before login");
-        opts.optflag("", "double-stack", "enable double stack");
-        opts.optopt("n", "param-n", "n", "");
-        opts.optopt("", "type", "type", "");
-        opts.optopt("", "acid", "acid", "");
-        opts.optopt("", "os", "os, e.g. Windows", "");
-        opts.optopt("", "name", "name, e.g. Windows 98", "");
-        opts.optopt("", "retry-delay", "retry delay, default 300 millis", "");
-        opts.optopt("", "retry-times", "retry times, default 10 times", "");
-        opts
-    };
-    static ref LOGOUT_OPTS: Options = {
-        let mut opts = Options::new();
-        opts.optflag("h", "help", "print help message");
-        opts.optopt("s", "server", "auth server", "");
-        opts.optopt("u", "username", "username", "");
-        opts.optopt("i", "ip", "ip", "");
-        opts.optflag("d", "detect", "detect client ip");
-        opts.optflag("", "select-ip", "select client ip");
-        opts.optflag("", "strict-bind", "strict bind ip");
-        opts.optopt("", "acid", "acid", "");
-        opts
-    };
-}
 
 fn print_usage(opts: Option<&Options>) {
     let brief = "Usage: sdusrun ACTION [options]\n\nActions: login | logout".to_string();
@@ -67,7 +28,31 @@ fn main() {
 }
 
 fn login_match(args: &[String]) {
-    let matches = match LOGIN_OPTS.parse(args) {
+    let options = {
+        let mut opts = Options::new();
+        opts.optflag("h", "help", "print help message");
+        opts.optopt("s", "server", "auth server", "");
+        opts.optopt("c", "config", "config file path", "");
+        opts.optflag("", "continue", "[Unimplemented] continuous login");
+        opts.optopt("u", "username", "username", "");
+        opts.optopt("p", "password", "password", "");
+        opts.optopt("i", "ip", "ip", "");
+        opts.optflag("d", "detect", "detect client ip");
+        opts.optflag("", "select-ip", "select client ip");
+        opts.optflag("", "strict-bind", "strict bind ip");
+        opts.optflag("", "test", "test network connection before login");
+        opts.optflag("", "double-stack", "enable double stack");
+        opts.optopt("n", "param-n", "n", "");
+        opts.optopt("", "type", "type", "");
+        opts.optopt("", "acid", "acid", "");
+        opts.optopt("", "os", "os, e.g. Windows", "");
+        opts.optopt("", "name", "name, e.g. Windows 98", "");
+        opts.optopt("", "retry-delay", "retry delay, default 300 millis", "");
+        opts.optopt("", "retry-times", "retry times, default 10 times", "");
+        opts
+    };
+
+    let matches = match options.parse(args) {
         Ok(m) => m,
         Err(e) => {
             println!("parse args error: {}", e);
@@ -76,7 +61,7 @@ fn login_match(args: &[String]) {
     };
 
     if matches.opt_present("h") {
-        print_usage(Some(&LOGIN_OPTS));
+        print_usage(Some(&options));
     } else if matches.opt_present("c") {
         config_login(matches);
     } else {
@@ -85,7 +70,20 @@ fn login_match(args: &[String]) {
 }
 
 fn logout_match(args: &[String]) {
-    let matches = match LOGOUT_OPTS.parse(args) {
+    let options = {
+        let mut opts = Options::new();
+        opts.optflag("h", "help", "print help message");
+        opts.optopt("s", "server", "auth server", "");
+        opts.optopt("u", "username", "username", "");
+        opts.optopt("i", "ip", "ip", "");
+        opts.optflag("d", "detect", "detect client ip");
+        opts.optflag("", "select-ip", "select client ip");
+        opts.optflag("", "strict-bind", "strict bind ip");
+        opts.optopt("", "acid", "acid", "");
+        opts
+    };
+
+    let matches = match options.parse(args) {
         Ok(m) => m,
         Err(e) => {
             println!("parse args error: {}", e);
@@ -94,7 +92,7 @@ fn logout_match(args: &[String]) {
     };
 
     if matches.opt_present("h") {
-        print_usage(Some(&LOGOUT_OPTS));
+        print_usage(Some(&options));
     } else {
         logout(matches)
     }

@@ -1,12 +1,11 @@
+name: Build Test
 on: [push]
-
-name: Build
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      AUTH_SERVER_IP: 10.0.0.1
+      AUTH_SERVER_IP: ${{ secrets.AUTH_SERVER_IP }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2

@@ -1,10 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
-extern crate quick_error;
-
-pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-
 mod user;
 pub use user::User;
 
@@ -22,3 +15,5 @@ pub use utils::select_ip;
 
 #[cfg(feature = "ureq")]
 mod http_client;
+
+pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;

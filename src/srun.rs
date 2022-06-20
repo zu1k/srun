@@ -5,6 +5,7 @@ use crate::{
 };
 use hmac::{Hmac, Mac};
 use md5::Md5;
+use quick_error::quick_error;
 use serde::Deserialize;
 use sha1::{Digest, Sha1};
 use std::{

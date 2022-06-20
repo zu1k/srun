@@ -1,4 +1,5 @@
 use crate::Result;
+use quick_error::quick_error;
 use std::{
     io,
     net::{IpAddr, TcpStream, ToSocketAddrs},
