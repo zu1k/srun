@@ -48,7 +48,7 @@ fn get_ifs() -> Vec<(String, IpAddr)> {
 pub fn get_ip_by_if_name(if_name: &str) -> Option<String> {
     let ifs = get_ifs();
     for i in ifs {
-        if i.0.contains(if_name) {
+        if i.0.contains(if_name) && i.1.is_ipv4() {
             return Some(i.1.to_string());
         }
     }
