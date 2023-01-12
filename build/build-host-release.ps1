@@ -32,7 +32,7 @@ $Version = (Select-String -Pattern '^version *= *"([^"]*)"$' -Path "${PSScriptRo
 $Version = $Version -replace '"'
 
 $PackageReleasePath = "${PSScriptRoot}\release"
-$PackageName = "sdusrun-${Version}.${TargetTriple}.zip"
+$PackageName = "srun-${Version}.${TargetTriple}.zip"
 $PackagePath = "${PackageReleasePath}\${PackageName}"
 
 Write-Host $Version
@@ -45,7 +45,7 @@ Push-Location "${PSScriptRoot}\..\target\release"
 $ProgressPreference = "SilentlyContinue"
 New-Item "${PackageReleasePath}" -ItemType Directory -ErrorAction SilentlyContinue
 $CompressParam = @{
-    LiteralPath     = "sdusrun.exe"
+    LiteralPath     = "srun.exe"
     DestinationPath = "${PackagePath}"
 }
 Compress-Archive @CompressParam

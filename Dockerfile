@@ -6,7 +6,7 @@ ENV AUTH_SERVER_IP=$AUTH_SERVER_IP
 
 RUN apt-get update && apt-get install -y build-essential curl musl-tools upx
 
-WORKDIR /root/sdusrun
+WORKDIR /root/srun
 
 ADD . .
 
@@ -33,10 +33,10 @@ RUN rustup install nightly && rustup default nightly && \
     CC=/root/$MUSL-cross/bin/$MUSL-gcc && \
     rustup target add $RUST_TARGET && \
     RUSTFLAGS="-C linker=$CC" CC=$CC cargo build --target "$RUST_TARGET" --release && \
-    mv target/$RUST_TARGET/release/sdusrun target/release/ && \
-    upx -9 target/release/sdusrun
+    mv target/$RUST_TARGET/release/srun target/release/ && \
+    upx -9 target/release/srun
 
-FROM alpine:3.14 AS sdusrun
+FROM alpine:3.14 AS srun
 
-COPY --from=build /root/sdusrun/target/release/sdusrun /usr/bin
-ENTRYPOINT [ "sdusrun" ]
+COPY --from=build /root/srun/target/release/srun /usr/bin
+ENTRYPOINT [ "srun" ]

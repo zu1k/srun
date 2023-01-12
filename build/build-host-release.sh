@@ -51,10 +51,10 @@ if [[ "${BUILD_TARGET}" == *"-windows-"* ]]; then
     TARGET_SUFFIX=".exe"
 fi
 
-TARGET="sdusrun${TARGET_SUFFIX}"
+TARGET="srun${TARGET_SUFFIX}"
 
 RELEASE_FOLDER="${ROOT_DIR}/release"
-RELEASE_PACKAGE_NAME="sdusrun-${VERSION}-${BUILD_TARGET}"
+RELEASE_PACKAGE_NAME="srun-${VERSION}-${BUILD_TARGET}"
 
 mkdir -p "${RELEASE_FOLDER}"
 

@@ -1,4 +1,4 @@
-NAME=sdusrun
+NAME=srun
 BINDIR=bin
 VERSION=$(shell git describe --tags || echo "unknown version")
 STRIP=llvm-strip -s

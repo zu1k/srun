@@ -77,18 +77,18 @@ function build() {
     mkdir -p "${PKG_DIR}"
 
     if [[ "$TARGET" == *"-linux-"* ]]; then
-        PKG_NAME="sdusrun-${VERSION}-${TARGET}.tar.xz"
+        PKG_NAME="srun-${VERSION}-${TARGET}.tar.xz"
         PKG_PATH="${PKG_DIR}/${PKG_NAME}"
 
         cd ${RELEASE_DIR}
 
         if [[ "${use_upx}" = true ]]; then
             # Enable upx for MIPS.
-            $upx sdusrun #>/dev/null
+            $upx srun #>/dev/null
         fi
 
         echo "* Packaging XZ in ${PKG_PATH} ..."
-        tar -cJf ${PKG_PATH} "sdusrun"
+        tar -cJf ${PKG_PATH} "srun"
 
         if [[ $? != "0" ]]; then
             exit 1
@@ -97,12 +97,12 @@ function build() {
         cd "${PKG_DIR}"
         shasum -a 256 "${PKG_NAME}" > "${PKG_NAME}.sha256"
     elif [[ "$TARGET" == *"-windows-"* ]]; then
-        PKG_NAME="sdusrun-${VERSION}-${TARGET}.zip"
+        PKG_NAME="srun-${VERSION}-${TARGET}.zip"
         PKG_PATH="${PKG_DIR}/${PKG_NAME}"
 
         echo "* Packaging ZIP in ${PKG_PATH} ..."
         cd ${RELEASE_DIR}
-        zip ${PKG_PATH} "sdusrun.exe"
+        zip ${PKG_PATH} "srun.exe"
 
         if [[ $? != "0" ]]; then
             exit 1

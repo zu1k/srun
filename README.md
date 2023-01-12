@@ -1,13 +1,13 @@
-# SDUSrun
+# srun
 
-[![GitHub stars](https://img.shields.io/github/stars/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/network)
-[![GitHub issues](https://img.shields.io/github/issues/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/issues)
-[![Release](https://img.shields.io/github/release/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/releases)
-[![Build](https://github.com/zu1k/sdusrun/actions/workflows/build-test.yml/badge.svg)](https://github.com/zu1k/sdusrun/actions/workflows/build-test.yml)
-[![GitHub license](https://img.shields.io/github/license/zu1k/sdusrun)](https://github.com/zu1k/sdusrun/blob/master/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/zu1k/srun)](https://github.com/zu1k/srun/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/zu1k/srun)](https://github.com/zu1k/srun/network)
+[![GitHub issues](https://img.shields.io/github/issues/zu1k/srun)](https://github.com/zu1k/srun/issues)
+[![Release](https://img.shields.io/github/release/zu1k/srun)](https://github.com/zu1k/srun/releases)
+[![Build](https://github.com/zu1k/srun/actions/workflows/build-test.yml/badge.svg)](https://github.com/zu1k/srun/actions/workflows/build-test.yml)
+[![GitHub license](https://img.shields.io/github/license/zu1k/srun)](https://github.com/zu1k/srun/blob/master/LICENSE)
 
-Srun authentication system login tools. [compatible versions](https://github.com/zu1k/sdusrun/discussions/8)
+Srun authentication system login tools. [compatible versions](https://github.com/zu1k/srun/discussions/8)
 
 ## Features
 
@@ -24,19 +24,19 @@ Srun authentication system login tools. [compatible versions](https://github.com
 
 ## Usage
 
-[Pre-built binaries](https://github.com/zu1k/sdusrun/releases)
+[Pre-built binaries](https://github.com/zu1k/srun/releases)
 
 ### CMD mode
 
 ```
-./sdusrun login -u USERNAME -p PASSWORD -i IP [-s AUTH_SERVER]
+./srun login -u USERNAME -p PASSWORD -i IP [-s AUTH_SERVER]
 ```
 
 `AUTH_SERVER` should contain protocols, e.g. `http://10.0.0.1`.
 
 #### Which IP to be authorized?
 
-SDUSrun support three methods of specifying IP:
+srun support three methods of specifying IP:
 
 - use `-i IP` to specify ip
 - use `-d` to auto detect ip
@@ -48,7 +48,7 @@ You need to check the IP address of each network interfaces in advance and choos
 
 ##### detect IP
 
-SDUSrun support automatic IP detection, it determines the IP address from the information returned by the authentication server.
+srun support automatic IP detection, it determines the IP address from the information returned by the authentication server.
 
 This is useful in cases where you only have one IP address to authorize.
 
@@ -58,10 +58,10 @@ If you are multidialing and have multiple legitimate IPs at the same time, you n
 
 This method is similar to the first method, except that it saves you the trouble of manually querying all the IPs.
 
-SDUSrun will query all the legitimate IPs in advance and then print a list of IPs for you to choose from.
+srun will query all the legitimate IPs in advance and then print a list of IPs for you to choose from.
 
 ```sh
-$ ./sdusrun login -u USERNAME -p PASSWORD --select-ip
+$ ./srun login -u USERNAME -p PASSWORD --select-ip
 Please select your IP:
     1. 192.168.226.5
     2. 10.27.196.218
@@ -79,10 +79,10 @@ Please note that when your computer has only one IP that can be authorized, we w
 
 Usually, it is sufficient to specify the information directly using command line parameters.
 
-In order to meet the needs of multi-dial users, SDUSrun support reading multiple user information from a config file.
+In order to meet the needs of multi-dial users, srun support reading multiple user information from a config file.
 
 ```
-./sdusrun login -c config.json
+./srun login -c config.json
 ```
 
 config file template
@@ -149,6 +149,4 @@ cargo build --features "tls" --release
 
 ## License
 
-**SDUSrun** © [zu1k](https://github.com/zu1k), Released under the [GPL-3.0](./LICENSE) License.<br>
-
-> Blog [zu1k.com](https://zu1k.com) · GitHub [@zu1k](https://github.com/zu1k) · Twitter [@zu1k_lv](https://twitter.com/zu1k_lv) · Telegram Channel [@peekfun](https://t.me/peekfun)
+**srun** © [zu1k](https://github.com/zu1k), Released under the [GPL-3.0](./LICENSE) License.<br>

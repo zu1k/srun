@@ -1,9 +1,9 @@
 use getopts::{Matches, Options};
-use sdusrun::{read_config_from_file, select_ip, SrunClient, User};
+use srun::{read_config_from_file, select_ip, SrunClient, User};
 use std::env;
 
 fn print_usage(opts: Option<&Options>) {
-    let brief = "Usage: sdusrun ACTION [options]\n\nActions: login | logout".to_string();
+    let brief = "Usage: srun ACTION [options]\n\nActions: login | logout".to_string();
     if let Some(opts) = opts {
         print!("{}", opts.usage(&brief));
     } else {
