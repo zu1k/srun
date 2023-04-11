@@ -38,7 +38,7 @@ fi
 
 if [[ "${use_upx}" = true ]]; then
     if [[ -z "$upx" ]] && command -v upx &> /dev/null; then
-        upx="upx -9"
+        upx="upx --best --lzma"
     fi
 
     if [[ "x$upx" == "x" ]]; then
@@ -59,13 +59,17 @@ function build() {
     if [[ "${TARGET_FEATURES}" != "" ]]; then
         echo "* Building ${TARGET} package ${VERSION} with features \"${TARGET_FEATURES}\" ..."
 
-        cross build --target "${TARGET}" \
+        cross build -Z build-std=std,panic_abort \
+                    -Z build-std-features=panic_immediate_abort \
+                    --target "${TARGET}" \
                     --features "${TARGET_FEATURES}" \
                     --release
     else
         echo "* Building ${TARGET} package ${VERSION} ..."
 
-        cross build --target "${TARGET}" \
+        cross build -Z build-std=std,panic_abort \
+                    -Z build-std-features=panic_immediate_abort \
+                    --target "${TARGET}" \
                     --release
     fi
 

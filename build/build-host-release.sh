@@ -26,15 +26,15 @@ echo "Started build release ${VERSION} for ${HOST_TRIPLE} (target: ${BUILD_TARGE
 
 if [[ "${BUILD_TARGET}" != "" ]]; then
     if [[ "${BUILD_FEATURES}" != "" ]]; then
-        cargo build --release --features "${BUILD_FEATURES}" --target "${BUILD_TARGET}"
+        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --features "${BUILD_FEATURES}" --target "${BUILD_TARGET}"
     else
-        cargo build --release --target "${BUILD_TARGET}"
+        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --target "${BUILD_TARGET}"
     fi
 else
     if [[ "${BUILD_FEATURES}" != "" ]]; then
-        cargo build --release --features "${BUILD_FEATURES}"
+        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --features "${BUILD_FEATURES}"
     else
-        cargo build --release
+        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release
     fi
 fi
 

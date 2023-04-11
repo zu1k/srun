@@ -2,9 +2,9 @@ NAME=srun
 BINDIR=bin
 VERSION=$(shell git describe --tags || echo "unknown version")
 STRIP=llvm-strip -s
-CARGO_BUILD=cargo build --release --target
-CROSS_BUILD=cross build --release --target
-UPX=-upx --best
+CARGO_BUILD=cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --target
+CROSS_BUILD=cross build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --target
+UPX=-upx --best --lzma
 TLS=FALSE
 
 CROSS_TARGET_LIST = \
