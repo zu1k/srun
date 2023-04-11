@@ -8,5 +8,5 @@ fn main() {
     println!("ENV AUTH_SERVER_IP = {auth_server_ip}");
     auth_server_ip
         .parse::<Ipv4Addr>()
-        .expect(&format!("AUTH_SERVER_IP invalid"));
+        .expect("AUTH_SERVER_IP invalid");
 }

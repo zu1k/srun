@@ -1,6 +1,7 @@
 use base64::{
     alphabet::Alphabet,
-    engine::{GeneralPurpose, self}, Engine,
+    engine::{self, GeneralPurpose},
+    Engine,
 };
 use lazy_static::lazy_static;
 
