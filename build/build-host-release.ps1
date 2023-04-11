@@ -18,10 +18,10 @@ $TargetTriple = (rustc -Vv | Select-String -Pattern "host: (.*)" | ForEach-Objec
 Write-Host "Started building release for ${TargetTriple} ..."
 
 if ([string]::IsNullOrEmpty($Features)) {
-    cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release
+    cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --target $TargetTriple
 }
 else {
-    cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --features "${Features}"
+    cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --target $TargetTriple --features "${Features}"
 }
 
 if (!$?) {
@@ -40,7 +40,7 @@ Write-Host $PackageReleasePath
 Write-Host $PackageName
 Write-Host $PackagePath
 
-Push-Location "${PSScriptRoot}\..\target\release"
+Push-Location "${PSScriptRoot}\..\target\$TargetTriple\release"
 
 $ProgressPreference = "SilentlyContinue"
 New-Item "${PackageReleasePath}" -ItemType Directory -ErrorAction SilentlyContinue

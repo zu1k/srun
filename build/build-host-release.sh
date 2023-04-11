@@ -32,9 +32,9 @@ if [[ "${BUILD_TARGET}" != "" ]]; then
     fi
 else
     if [[ "${BUILD_FEATURES}" != "" ]]; then
-        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release --features "${BUILD_FEATURES}"
+        cargo build --release --features "${BUILD_FEATURES}"
     else
-        cargo build -Z build-std=std,panic_abort -Z build-std-features=panic_immediate_abort --release
+        cargo build --release
     fi
 fi
 
