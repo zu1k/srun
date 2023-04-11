@@ -1,14 +1,14 @@
 use base64::{
     alphabet::Alphabet,
-    engine::fast_portable::{FastPortable, PAD},
+    engine::{GeneralPurpose, self}, Engine,
 };
 use lazy_static::lazy_static;
 
 const BASE64_ALPHABET: &str = "LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA";
 lazy_static! {
-    static ref BASE64_ENGINE: FastPortable = {
-        let alphabet = Alphabet::from_str(BASE64_ALPHABET).unwrap();
-        FastPortable::from(&alphabet, PAD)
+    static ref BASE64_ENGINE: GeneralPurpose = {
+        let alphabet = Alphabet::new(BASE64_ALPHABET).unwrap();
+        engine::GeneralPurpose::new(&alphabet, engine::GeneralPurposeConfig::new())
     };
 }
 
@@ -85,5 +85,5 @@ pub fn param_i(username: &str, password: &str, ip: &str, acid: i32, token: &str)
     })
     .to_string();
     let xen = x_encode(info.as_str(), token);
-    String::from("{SRBX1}") + base64::encode_engine(xen, &*BASE64_ENGINE).as_str()
+    String::from("{SRBX1}") + BASE64_ENGINE.encode(xen).as_str()
 }

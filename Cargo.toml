@@ -15,16 +15,16 @@ build = "build.rs"
 [profile.release]
 strip = true
 lto = true
-opt-level = "s"
+opt-level = "z"
 codegen-units = 1
 panic = "abort"
 
 
 [dependencies]
-base64 = "0.20.0-alpha"
+base64 = "0.21"
 getopts = "0.2"
 hmac = "0.12"
-if-addrs = "0.7"
+if-addrs = "0.10"
 lazy_static = "1.4"
 md-5 = "0.10"
 quick-error = "2.0"
@@ -33,7 +33,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha-1 = "0.10"
 ureq = { git = "https://github.com/zu1k/ureq.git", branch = "srun", default-features = false, optional = true }
-socket2 = "0.4"
+socket2 = "0.5"
 
 [features]
 default = ["ureq"]
