@@ -113,6 +113,7 @@ fn config_login(matches: Matches) {
             for user in config_i {
                 println!("login user: {:#?}", user);
                 let mut client = SrunClient::new_from_user(&server, user)
+                    .set_detect_ip(config.detect_ip)
                     .set_strict_bind(config.strict_bind)
                     .set_double_stack(config.double_stack);
                 if let Some(n) = config.n {
