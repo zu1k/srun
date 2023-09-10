@@ -6,6 +6,7 @@ use std::{collections::LinkedList, error::Error, fs::File, io::BufReader, path::
 #[serde(default)]
 pub struct Config {
     pub server: Option<String>,
+    pub detect_ip: bool,
     pub strict_bind: bool,
     pub double_stack: bool,
     pub n: Option<i32>,
