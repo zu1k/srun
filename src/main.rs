@@ -1,6 +1,7 @@
 use getopts::{Matches, Options};
-use srun::{read_config_from_file, select_ip, SrunClient, User};
+use srun::{get_ip_by_if_name, read_config_from_file, select_ip, SrunClient, User};
 use std::env;
+
 
 fn print_usage(opts: Option<&Options>) {
     let brief = "Usage: srun ACTION [options]\n\nActions: login | logout".to_string();
@@ -252,7 +253,10 @@ fn config_logout(matches: Matches){
                 });
             for user in config_i {
                 println!("login user: {:#?}", user);
-                let mut client = SrunClient::new_for_logout(&auth_server, &user.username, &user.ip.unwrap_or_default())
+                let ip = user
+                    .ip
+                    .unwrap_or_else(|| get_ip_by_if_name(&user.if_name.unwrap_or_default()).unwrap_or_default());
+                let mut client = SrunClient::new_for_logout(&auth_server, &user.username, &ip)
                     .set_detect_ip(config.detect_ip)
                     .set_strict_bind(config.strict_bind);
                 if let Err(e) = client.login() {

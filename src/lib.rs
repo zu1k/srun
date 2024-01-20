@@ -12,6 +12,7 @@ pub use file::read_config_from_file;
 
 mod utils;
 pub use utils::select_ip;
+pub use utils::get_ip_by_if_name;
 
 #[cfg(feature = "ureq")]
 mod http_client;
