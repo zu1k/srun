@@ -252,7 +252,7 @@ fn config_logout(matches: Matches){
                     None => format!("http://{}", env!("AUTH_SERVER_IP")),
                 });
             for user in config_i {
-                println!("login user: {:#?}", user);
+                println!("logout user: {:#?}", user);
                 let ip = user
                     .ip
                     .unwrap_or_else(|| get_ip_by_if_name(&user.if_name.unwrap_or_default()).unwrap_or_default());
@@ -260,7 +260,7 @@ fn config_logout(matches: Matches){
                     .set_detect_ip(config.detect_ip)
                     .set_strict_bind(config.strict_bind);
                 if let Err(e) = client.logout() {
-                    println!("login error: {}", e);
+                    println!("logout error: {}", e);
                 }
             }
         }
