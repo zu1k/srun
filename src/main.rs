@@ -259,7 +259,7 @@ fn config_logout(matches: Matches){
                 let mut client = SrunClient::new_for_logout(&auth_server, &user.username, &ip)
                     .set_detect_ip(config.detect_ip)
                     .set_strict_bind(config.strict_bind);
-                if let Err(e) = client.login() {
+                if let Err(e) = client.logout() {
                     println!("login error: {}", e);
                 }
             }
