@@ -1,6 +1,8 @@
-use getopts::{Matches, Options};
-use srun::{read_config_from_file, select_ip, SrunClient, User};
 use std::env;
+
+use getopts::{Matches, Options};
+
+use srun::{get_ip_by_if_name, read_config_from_file, select_ip, SrunClient, User};
 
 fn print_usage(opts: Option<&Options>) {
     let brief = "Usage: srun ACTION [options]\n\nActions: login | logout".to_string();
@@ -77,6 +79,7 @@ fn logout_match(args: &[String]) {
         opts.optopt("u", "username", "username", "");
         opts.optopt("i", "ip", "ip", "");
         opts.optflag("d", "detect", "detect client ip");
+        opts.optopt("c", "config", "logout by config file", "");
         opts.optflag("", "select-ip", "select client ip");
         opts.optflag("", "strict-bind", "strict bind ip");
         opts.optopt("", "acid", "acid", "");
@@ -93,6 +96,8 @@ fn logout_match(args: &[String]) {
 
     if matches.opt_present("h") {
         print_usage(Some(&options));
+    } else if matches.opt_present("c") {
+        config_logout(matches);
     } else {
         logout(matches)
     }
@@ -231,6 +236,42 @@ fn single_login(matches: Matches) {
 
     if let Err(e) = client.login() {
         println!("login error: {}", e);
+    }
+}
+
+fn config_logout(matches: Matches) {
+    let config_path = matches.opt_str("c").unwrap();
+    match read_config_from_file(config_path) {
+        Ok(config) => {
+            let config_i = config.clone();
+            let auth_server = config
+                .server
+                .clone()
+                .unwrap_or_else(|| match matches.opt_str("s") {
+                    Some(u) => u,
+                    None => format!("http://{}", env!("AUTH_SERVER_IP")),
+                });
+            for user in config_i {
+                println!("logout user: {:#?}", user);
+                let ip = user.ip.unwrap_or_else(|| {
+                    get_ip_by_if_name(&user.if_name.unwrap_or_default()).unwrap_or_default()
+                });
+                let mut client = SrunClient::new_for_logout(&auth_server, &user.username, &ip)
+                    .set_detect_ip(config.detect_ip)
+                    .set_strict_bind(config.strict_bind);
+
+                if let Some(acid) = config.acid {
+                    client.set_acid(acid);
+                }
+
+                if let Err(e) = client.logout() {
+                    println!("logout error: {}", e);
+                }
+            }
+        }
+        Err(e) => {
+            println!("read config file error: {}", e);
+        }
     }
 }
 
