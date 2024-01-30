@@ -79,7 +79,7 @@ fn logout_match(args: &[String]) {
         opts.optopt("u", "username", "username", "");
         opts.optopt("i", "ip", "ip", "");
         opts.optflag("d", "detect", "detect client ip");
-        opts.optopt("c","config","logout by config","");
+        opts.optopt("c", "config", "logout by config file", "");
         opts.optflag("", "select-ip", "select client ip");
         opts.optflag("", "strict-bind", "strict bind ip");
         opts.optopt("", "acid", "acid", "");
@@ -98,8 +98,7 @@ fn logout_match(args: &[String]) {
         print_usage(Some(&options));
     } else if matches.opt_present("c") {
         config_logout(matches);
-    }
-    else {
+    } else {
         logout(matches)
     }
 }
@@ -240,7 +239,7 @@ fn single_login(matches: Matches) {
     }
 }
 
-fn config_logout(matches: Matches){
+fn config_logout(matches: Matches) {
     let config_path = matches.opt_str("c").unwrap();
     match read_config_from_file(config_path) {
         Ok(config) => {
@@ -254,9 +253,9 @@ fn config_logout(matches: Matches){
                 });
             for user in config_i {
                 println!("logout user: {:#?}", user);
-                let ip = user
-                    .ip
-                    .unwrap_or_else(|| get_ip_by_if_name(&user.if_name.unwrap_or_default()).unwrap_or_default());
+                let ip = user.ip.unwrap_or_else(|| {
+                    get_ip_by_if_name(&user.if_name.unwrap_or_default()).unwrap_or_default()
+                });
                 let mut client = SrunClient::new_for_logout(&auth_server, &user.username, &ip)
                     .set_detect_ip(config.detect_ip)
                     .set_strict_bind(config.strict_bind);
