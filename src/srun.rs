@@ -290,7 +290,7 @@ impl SrunClient {
                 &self.utype.to_string(),
                 &param_i,
             ]
-                .join(&self.token);
+            .join(&self.token);
             let mut sha1_hasher = Sha1::new();
             sha1_hasher.update(check_sum);
             format!("{:x}", sha1_hasher.finalize())
