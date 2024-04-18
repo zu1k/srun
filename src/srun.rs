@@ -173,7 +173,7 @@ impl SrunClient {
         let query = vec![
             ("callback", "sdu"),
             ("username", &self.username),
-            ("ip", &self.online_ip),
+            ("ip", &self.client_ip),
             ("_", &time),
         ];
 
@@ -190,8 +190,8 @@ impl SrunClient {
                 serde_json::from_slice(&resp[4..resp.len() - 1])?
             }
         };
-        if !challenge.client_ip.is_empty() {
-            self.client_ip = challenge.client_ip;
+        if !challenge.online_ip.is_empty() {
+            self.client_ip = challenge.online_ip;
         }
         return Ok(self.client_ip.clone());
     }
@@ -212,7 +212,7 @@ impl SrunClient {
         let query = vec![
             ("callback", "sdu"),
             ("username", &self.username),
-            ("ip", &self.online_ip),
+            ("ip", &self.client_ip),
             ("_", &time),
         ];
 
@@ -260,7 +260,7 @@ impl SrunClient {
         // this will detect ip from response if detect_ip
         self.get_token()?;
 
-        if self.online_ip.is_empty() {
+        if self.client_ip.is_empty() {
             return Err(Box::new(SrunError::IpUndefinedError));
         }
 
@@ -274,7 +274,7 @@ impl SrunClient {
         let param_i = param_i(
             &self.username,
             &self.password,
-            &self.online_ip,
+            &self.client_ip,
             self.acid,
             &self.token,
         );
@@ -285,7 +285,7 @@ impl SrunClient {
                 &self.username,
                 &hmd5,
                 &self.acid.to_string(),
-                &self.online_ip,
+                &self.client_ip,
                 &self.n.to_string(),
                 &self.utype.to_string(),
                 &param_i,
@@ -315,7 +315,7 @@ impl SrunClient {
                 ("action", "login"),
                 ("username", &self.username),
                 ("password", &password),
-                ("ip", &self.online_ip),
+                ("ip", &self.client_ip),
                 ("ac_id", &ac_id),
                 ("n", &n),
                 ("type", &utype),
@@ -366,7 +366,7 @@ impl SrunClient {
             ("callback", "sdu"),
             ("action", "logout"),
             ("username", &self.username),
-            ("ip", &self.online_ip),
+            ("ip", &self.client_ip),
             ("ac_id", &ac_id),
             ("_", &time),
         ];
