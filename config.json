@@ -1,5 +1,6 @@
 {
     "server": "http://10.0.0.1",
+    "detect_ip": false,
     "strict_bind": false,
     "double_stack": false,
     "retry_delay": 300,
