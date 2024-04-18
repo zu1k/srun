@@ -25,6 +25,7 @@ pub struct SrunClient {
     username: String,
     password: String,
     ip: String,
+    client_ip: String,
     detect_ip: bool,
     strict_bind: bool,
 
@@ -60,7 +61,8 @@ impl SrunClient {
             auth_server: auth_server.to_owned(),
             username: user.username,
             password: user.password,
-            ip,
+            ip: ip.clone(),
+            client_ip: ip,
             acid: 12,
             n: 200,
             utype: 1,
@@ -160,8 +162,42 @@ impl SrunClient {
         })
     }
 
+    fn detect_ip(&mut self) -> Result<String> {
+        self.time = unix_second() - 2;
+        let req = self
+            .get_http_client()?
+            .get(format!("{}{}", self.auth_server, PATH_GET_CHALLENGE).as_str());
+
+        let time = self.time.to_string();
+
+        let query = vec![
+            ("callback", "sdu"),
+            ("username", &self.username),
+            ("ip", &self.client_ip),
+            ("_", &time),
+        ];
+
+        let challenge: ChallengeResponse = {
+            #[cfg(feature = "reqwest")]
+            {
+                let resp = req.query(&query).send()?.bytes()?;
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+            #[cfg(feature = "ureq")]
+            {
+                let resp = req.query_vec(query).call()?.into_string()?;
+                let resp = resp.as_bytes();
+                serde_json::from_slice(&resp[4..resp.len() - 1])?
+            }
+        };
+        if !challenge.online_ip.is_empty() {
+            self.client_ip = challenge.online_ip;
+        }
+        return Ok(self.client_ip.clone());
+    }
+
     fn get_token(&mut self) -> Result<String> {
-        if !self.detect_ip && self.ip.is_empty() {
+        if self.client_ip.is_empty() {
             println!("need ip");
             return Err(Box::new(SrunError::IpUndefinedError));
         }
@@ -176,7 +212,7 @@ impl SrunClient {
         let query = vec![
             ("callback", "sdu"),
             ("username", &self.username),
-            ("ip", &self.ip),
+            ("ip", &self.client_ip),
             ("_", &time),
         ];
 
@@ -198,9 +234,6 @@ impl SrunClient {
         match challenge.challenge.clone() {
             Some(token) => {
                 self.token = token;
-                if self.detect_ip && !challenge.client_ip.is_empty() {
-                    self.ip = challenge.client_ip;
-                }
             }
             None => {
                 return Err(Box::new(SrunError::GetChallengeFailed));
@@ -220,10 +253,14 @@ impl SrunClient {
             }
         }
 
+        if self.detect_ip {
+            self.detect_ip()?;
+        }
+
         // this will detect ip from response if detect_ip
         self.get_token()?;
 
-        if self.ip.is_empty() {
+        if self.client_ip.is_empty() {
             return Err(Box::new(SrunError::IpUndefinedError));
         }
 
@@ -237,7 +274,7 @@ impl SrunClient {
         let param_i = param_i(
             &self.username,
             &self.password,
-            &self.ip,
+            &self.client_ip,
             self.acid,
             &self.token,
         );
@@ -248,12 +285,12 @@ impl SrunClient {
                 &self.username,
                 &hmd5,
                 &self.acid.to_string(),
-                &self.ip,
+                &self.client_ip,
                 &self.n.to_string(),
                 &self.utype.to_string(),
                 &param_i,
             ]
-            .join(&self.token);
+                .join(&self.token);
             let mut sha1_hasher = Sha1::new();
             sha1_hasher.update(check_sum);
             format!("{:x}", sha1_hasher.finalize())
@@ -278,7 +315,7 @@ impl SrunClient {
                 ("action", "login"),
                 ("username", &self.username),
                 ("password", &password),
-                ("ip", &self.ip),
+                ("ip", &self.client_ip),
                 ("ac_id", &ac_id),
                 ("n", &n),
                 ("type", &utype),
@@ -317,7 +354,7 @@ impl SrunClient {
 
     pub fn logout(&mut self) -> Result<()> {
         if self.detect_ip {
-            self.get_token()?;
+            self.detect_ip()?;
         }
         let req = self
             .get_http_client()?
@@ -329,7 +366,7 @@ impl SrunClient {
             ("callback", "sdu"),
             ("action", "logout"),
             ("username", &self.username),
-            ("ip", &self.ip),
+            ("ip", &self.client_ip),
             ("ac_id", &ac_id),
             ("_", &time),
         ];
