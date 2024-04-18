@@ -227,11 +227,11 @@ fn single_login(matches: Matches) {
     }
 
     if let Some(retry_delay) = matches.opt_str("retry-delay") {
-        client.set_retry_delay(retry_delay.parse().unwrap_or(300));
+        client.set_retry_delay(retry_delay.parse().unwrap_or(1000));
     }
 
     if let Some(retry_times) = matches.opt_str("retry-times") {
-        client.set_retry_times(retry_times.parse().unwrap_or(10));
+        client.set_retry_times(retry_times.parse().unwrap_or(3));
     }
 
     if let Err(e) = client.login() {

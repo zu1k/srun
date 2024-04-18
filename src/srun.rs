@@ -68,8 +68,8 @@ impl SrunClient {
             utype: 1,
             os: "Windows 10".to_string(),
             name: "Windows".to_string(),
-            retry_delay: 300,
-            retry_times: 10,
+            retry_delay: 1000,
+            retry_times: 3,
             ..Default::default()
         }
     }
