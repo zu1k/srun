@@ -8,14 +8,12 @@ UPX=-upx --best --lzma
 TLS=FALSE
 
 CROSS_TARGET_LIST = \
-	x86_64-unknown-linux-musl \
-	i686-unknown-linux-musl \
-	aarch64-unknown-linux-musl \
-	armv7-unknown-linux-musleabihf \
-	mips-unknown-linux-musl \
-	mipsel-unknown-linux-musl \
-	mips64-unknown-linux-muslabi64 \
-	mips64el-unknown-linux-muslabi64
+    i686-unknown-linux-musl \
+    x86_64-unknown-linux-musl \
+    armv7-unknown-linux-musleabihf \
+    arm-unknown-linux-musleabi \
+    arm-unknown-linux-musleabihf \
+    aarch64-unknown-linux-musl
 
 $(CROSS_TARGET_LIST):
 ifeq ($(TLS),TRUE)

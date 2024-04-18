@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.61.0-buster AS build
+FROM --platform=$BUILDPLATFORM rust:1.77-buster AS build
 
 ARG TARGETARCH
 ARG AUTH_SERVER_IP
@@ -36,7 +36,7 @@ RUN rustup install nightly && rustup default nightly && \
     mv target/$RUST_TARGET/release/srun target/release/ && \
     upx -9 target/release/srun
 
-FROM alpine:3.14 AS srun
+FROM alpine:3.19 AS srun
 
 COPY --from=build /root/srun/target/release/srun /usr/bin
 ENTRYPOINT [ "srun" ]

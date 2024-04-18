@@ -7,8 +7,8 @@ jobs:
     env:
       AUTH_SERVER_IP: ${{ secrets.AUTH_SERVER_IP }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/bin/
@@ -17,20 +17,18 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
       - name: Setup rust toolchain
         run: rustup show
-      - name: cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-targets
+
       - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
+
       - name: cargo clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           # args: --all-features
+
+      - name: cargo build
+        run: cargo build --release --all-targets

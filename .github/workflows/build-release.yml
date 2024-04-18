@@ -2,6 +2,7 @@ name: Build Releases
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -16,35 +17,22 @@ jobs:
       matrix:
         target:
           - i686-unknown-linux-musl
-          - x86_64-pc-windows-gnu
-          - x86_64-unknown-linux-gnu
           - x86_64-unknown-linux-musl
           - armv7-unknown-linux-musleabihf
-          - armv7-unknown-linux-gnueabihf
-          - arm-unknown-linux-gnueabi
-          - arm-unknown-linux-gnueabihf
           - arm-unknown-linux-musleabi
           - arm-unknown-linux-musleabihf
-          - aarch64-unknown-linux-gnu
           - aarch64-unknown-linux-musl
-          - mips-unknown-linux-musl
-          - mips-unknown-linux-gnu
-          - mipsel-unknown-linux-musl
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install dependences
         run: sudo apt-get update -y && sudo apt-get install -y upx;
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
-          target: ${{ matrix.target }}
-          toolchain: nightly
-          default: true
-          override: true
+          toolchain: nightly-2024-04-17
 
       - name: Install cross
         run: cargo install cross
@@ -79,7 +67,7 @@ jobs:
           - x86_64-apple-darwin
           - aarch64-apple-darwin
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install GNU tar
         if: runner.os == 'macOS'
@@ -88,14 +76,11 @@ jobs:
           # echo "::add-path::/usr/local/opt/gnu-tar/libexec/gnubin"
           echo "/usr/local/opt/gnu-tar/libexec/gnubin" >> $GITHUB_PATH
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
-          target: ${{ matrix.target }}
-          toolchain: nightly
-          default: true
-          override: true
+          toolchain: nightly-2024-04-17
+          targets: ${{ matrix.target }}
 
       - name: Build release
         shell: bash
@@ -115,20 +100,23 @@ jobs:
     env:
       RUSTFLAGS: "-C target-feature=+crt-static"
       RUST_BACKTRACE: full
+    strategy:
+      matrix:
+        target:
+          - x86_64-pc-windows-msvc
+          - i686-pc-windows-msvc
+          - aarch64-pc-windows-msvc
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
-          profile: minimal
-          toolchain: nightly
-          default: true
-          override: true
+          toolchain: nightly-2024-04-17
 
       - name: Build release
         run: |
-          pwsh ./build/build-host-release.ps1
+          pwsh ./build/build-host-release.ps1 -t ${{ matrix.target }}
 
       - name: Upload Github Assets
         uses: softprops/action-gh-release@v1

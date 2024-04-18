@@ -111,11 +111,11 @@ impl SrunClient {
     }
 
     pub fn set_os(&mut self, os: &str) {
-        self.os = os.to_owned();
+        self.os = os.to_string();
     }
 
     pub fn set_name(&mut self, name: &str) {
-        self.name = name.to_owned();
+        self.name = name.to_string();
     }
 
     pub fn set_retry_delay(&mut self, d: u32) {
@@ -162,7 +162,7 @@ impl SrunClient {
         })
     }
 
-    fn detect_ip(&mut self) -> Result<String> {
+    fn detect_ip(&mut self) -> Result<()> {
         self.time = unix_second() - 2;
         let req = self
             .get_http_client()?
@@ -193,7 +193,7 @@ impl SrunClient {
         if !challenge.online_ip.is_empty() {
             self.client_ip = challenge.online_ip;
         }
-        return Ok(self.client_ip.clone());
+        Ok(())
     }
 
     fn get_token(&mut self) -> Result<String> {
@@ -280,7 +280,7 @@ impl SrunClient {
         );
 
         let check_sum = {
-            let check_sum = vec![
+            let check_sum = [
                 "",
                 &self.username,
                 &hmd5,
@@ -433,6 +433,7 @@ struct PortalResponse {
     st: u64,
 }
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 #[serde(untagged)]
 enum ECode {

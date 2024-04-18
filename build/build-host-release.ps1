@@ -5,7 +5,12 @@
 
     choco install openssl
 #>
+
 param(
+    [Parameter(HelpMessage = "Specify the target triple directly")]
+    [Alias('t')]
+    [string]$TargetTriple,
+
     [Parameter(HelpMessage = "extra features")]
     [Alias('f')]
     [string]$Features
@@ -13,7 +18,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$TargetTriple = (rustc -Vv | Select-String -Pattern "host: (.*)" | ForEach-Object { $_.Matches.Value }).split()[-1]
+
+if (-not $PSBoundParameters.ContainsKey('TargetTriple')) {
+    try {
+        $TargetTriple = (rustc -Vv | Select-String -Pattern "host: (.*)" | ForEach-Object { $_.Matches.Value }).split()[-1]
+    } catch {
+        Write-Error "Unable to determine TargetTriple automatically"
+    }
+}
 
 Write-Host "Started building release for ${TargetTriple} ..."
 
