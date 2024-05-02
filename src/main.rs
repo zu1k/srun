@@ -115,10 +115,16 @@ fn config_login(matches: Matches) {
                     Some(u) => u,
                     None => format!("http://{}", env!("AUTH_SERVER_IP")),
                 });
-            for user in config_i {
+            for mut user in config_i {
                 println!("login user: {:#?}", user);
+                let mut detect_ip = false;
+                if user.ip.is_none() && user.if_name.is_none() {
+                    println!("miss both ip and if_name, will auto detect ip");
+                    user.ip = Some(String::new());
+                    detect_ip = true
+                }
                 let mut client = SrunClient::new_from_user(&server, user)
-                    .set_detect_ip(config.detect_ip)
+                    .set_detect_ip(detect_ip || config.detect_ip)
                     .set_strict_bind(config.strict_bind)
                     .set_double_stack(config.double_stack);
                 if let Some(n) = config.n {
