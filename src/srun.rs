@@ -1,7 +1,6 @@
 use crate::{
-    param_i,
+    Result, User, param_i,
     utils::{self, get_ip_by_if_name},
-    Result, User,
 };
 use hmac::{Hmac, Mac};
 use md5::Md5;
