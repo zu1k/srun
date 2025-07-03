@@ -1,8 +1,8 @@
-use std::env;
+use std::{env, process};
 
 use getopts::{Matches, Options};
 
-use srun::{get_ip_by_if_name, read_config_from_file, select_ip, SrunClient, User};
+use srun::{SrunClient, User, get_ip_by_if_name, read_config_from_file, select_ip};
 
 fn print_usage(opts: Option<&Options>) {
     let brief = "Usage: srun ACTION [options]\n\nActions: login | logout".to_string();
@@ -57,8 +57,8 @@ fn login_match(args: &[String]) {
     let matches = match options.parse(args) {
         Ok(m) => m,
         Err(e) => {
-            println!("parse args error: {}", e);
-            return;
+            eprintln!("parse args error: {}", e);
+            process::exit(1);
         }
     };
 
@@ -89,8 +89,8 @@ fn logout_match(args: &[String]) {
     let matches = match options.parse(args) {
         Ok(m) => m,
         Err(e) => {
-            println!("parse args error: {}", e);
-            return;
+            eprintln!("parse args error: {}", e);
+            process::exit(1);
         }
     };
 
@@ -150,12 +150,14 @@ fn config_login(matches: Matches) {
                 }
 
                 if let Err(e) = client.login() {
-                    println!("login error: {}", e);
+                    eprintln!("login error: {}", e);
+                    process::exit(1);
                 }
             }
         }
         Err(e) => {
-            println!("read config file error: {}", e);
+            eprintln!("read config file error: {}", e);
+            process::exit(1);
         }
     }
 }
@@ -241,7 +243,8 @@ fn single_login(matches: Matches) {
     }
 
     if let Err(e) = client.login() {
-        println!("login error: {}", e);
+        eprintln!("login error: {}", e);
+        process::exit(1);
     }
 }
 
@@ -271,12 +274,14 @@ fn config_logout(matches: Matches) {
                 }
 
                 if let Err(e) = client.logout() {
-                    println!("logout error: {}", e);
+                    eprintln!("logout error: {}", e);
+                    process::exit(1);
                 }
             }
         }
         Err(e) => {
-            println!("read config file error: {}", e);
+            eprintln!("read config file error: {}", e);
+            process::exit(1);
         }
     }
 }
@@ -320,6 +325,7 @@ fn logout(matches: Matches) {
     }
 
     if let Err(e) = client.logout() {
-        println!("logout error: {}", e);
+        eprintln!("logout error: {}", e);
+        process::exit(1);
     }
 }
